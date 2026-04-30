@@ -1,0 +1,368 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% load static %}
+{% block title %}
+  category Management
+{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'adminpanel/category-management.css' %}" />
+{% endblock %}
+
+{% block content %}
+  <div class="header-top">
+    <h1>Category Management</h1>
+    <button type="button" class="btn-add-category" onclick="openModal()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>Add Category
+    </button>
+  </div>
+ <form method="GET"
+      action="{% url 'admin_category_list' %}"
+      class="search-form">
+
+
+    <div class="search-wrapper">
+        <input type="text"
+       name="q"
+       value="{{ query }}"
+       class="search-bar"
+       placeholder="Search categories..."
+       onchange="this.form.submit()">
+
+
+        {% if query %}
+        <a href="{% url 'admin_category_list' %}" class="clear-btn">✖</a>
+        {% endif %}
+    </div>
+
+</form>
+
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Category Name</th>
+          <th>Slug</th>
+          <th>Created Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in page_obj %}
+          <tr>
+            <td class="category-name">{{ category.name }}</td>
+            <td class="slug">{{ category.slug }}</td>
+            <td class="date">{{ category.created_at|date:'M d, Y' }}</td>
+            <td>
+              <div class="status {% if not category.is_active %}deleted{% endif %}">
+                <span class="status-dot"></span>
+                <span class="status-text">
+                  {% if category.is_active %}
+                    Active
+                  {% else %}
+                    Inactive
+                  {% endif %}
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <button type="button" class="btn-icon btn-edit" data-url="{% url 'admin_category_edit' category.id %}" data-name="{{ category.name }}" data-description="{{ category.description }}" data-offer="{{ category.offer_percentage }}" data-status="{{ category.is_active }}" onclick="openEditModal(this)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
+
+                
+                  <button type="button"
+class="btn-icon btn-delete"
+data-url="{% url 'admin_category_delete' category.id %}"
+data-name="{{ category.name }}"
+onclick="openDeleteModal(this)">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="text-align:center; padding:30px;">No categories found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+ <div class="pagination-container">
+
+    {% if page_obj.has_previous %}
+        <a class="pagination-btn"
+           href="?page={{ page_obj.previous_page_number }}&q={{ query }}">
+            <svg width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </a>
+    {% else %}
+        <button class="pagination-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </button>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <button class="pagination-btn active">{{ num }}</button>
+        {% else %}
+            <a class="pagination-btn"
+               href="?page={{ num }}&q={{ query }}">
+               {{ num }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a class="pagination-btn"
+           href="?page={{ page_obj.next_page_number }}&q={{ query }}">
+            <svg width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M9 6l6 6-6 6"/>
+            </svg>
+        </a>
+    {% else %}
+        <button class="pagination-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M9 6l6 6-6 6"/>
+            </svg>
+        </button>
+    {% endif %}
+
+</div>
+
+
+  <div class="modal-overlay" id="addCategoryModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add New Category</h2>
+        <button class="btn-close" onclick="closeModal()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" novalidate>
+
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label>Category Name</label>
+            <input type="text" name="name" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select name="is_active" class="form-control">
+              <option value="True">Active</option>
+              <option value="False">Inactive</option>
+            </select>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Add Category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div class="modal-overlay" id="editCategoryModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Edit Category</h2>
+        <button class="btn-close" onclick="closeEditModal()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" id="editCategoryForm">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label>Category Name</label>
+            <input type="text" name="name" id="editCategoryName" class="form-control">
+
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" id="editDescription" class="form-control"></textarea>
+
+          </div>
+
+          <div class="form-group">
+            <label>Offer Percentage</label>
+            <input type="number" name="offer_percentage" id="editOffer" class="form-control" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="is_active" id="editStatus" class="form-control">
+              <option value="True">Active</option>
+              <option value="False">Inactive</option>
+            </select>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Update Category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="deleteCategoryModal">
+    <div class="modal modal-delete">
+      <div class="modal-header">
+        <h2>Delete Category</h2>
+        <button class="btn-close" onclick="closeDeleteModal()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-warning">
+          <div class="warning-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+          <div class="warning-content">
+            <h3 id="deleteWarningTitle">Are you sure you want to delete "Leather"?</h3>
+            
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+
+    <button type="button"
+    class="btn btn-cancel"
+    onclick="closeDeleteModal()">
+    Cancel
+    </button>
+
+    <form method="POST" id="deleteCategoryForm">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            Delete Category
+        </button>
+    </form>
+
+</div>
+
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    function openModal() {
+      document.getElementById('addCategoryModal').classList.add('active')
+      document.body.style.overflow = 'hidden'
+    }
+    
+    function closeModal() {
+      document.getElementById('addCategoryModal').classList.remove('active')
+      document.body.style.overflow = 'auto'
+      document.querySelector('#addCategoryModal form').reset()
+    }
+    
+    function openEditModal(button) {
+    
+      const url = button.dataset.url
+      const name = button.dataset.name
+      const description = button.dataset.description || ''
+      const offer = button.dataset.offer || ''
+      const status = button.dataset.status === 'True' ? 'True' : 'False'
+    
+      document.getElementById('editCategoryName').value = name
+      document.getElementById('editDescription').value = description
+      
+      const offerInput = document.getElementById('editOffer')
+      if (offerInput) offerInput.value = offer
+      
+      document.getElementById('editStatus').value = status
+    
+      document.getElementById('editCategoryForm').action = url
+    
+      document.getElementById('editCategoryModal').classList.add('active')
+    }
+    
+    function closeEditModal() {
+      document.getElementById('editCategoryModal').classList.remove('active')
+      document.body.style.overflow = 'auto'
+    }
+
+    function openDeleteModal(button) {
+
+    const url = button.dataset.url
+    const name = button.dataset.name
+
+    document.getElementById('deleteCategoryForm').action = url
+
+    document.getElementById('deleteWarningTitle').innerText =
+        `Are you sure you want to delete "${name}"?`
+
+    document.getElementById('deleteCategoryModal').classList.add('active')
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteCategoryModal').classList.remove('active')
+}
+
+
+    setTimeout(function () {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 3000);
+
+
+  </script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}
+        ALAIA - Admin
+      {% endblock %}
+    </title>
+
+    <link rel="stylesheet" href="{% static 'adminpanel/base.css' %}" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <link href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet" />
+
+    {% block extra_css %}
+
+    {% endblock %}
+  </head>
+
+  <body>
+    <div class="container">
+      <aside class="sidebar">
+        <div class="logo">
+          <h1>ALAIA <span class="logo-dot"></span></h1>
+          <p>Admin Panel</p>
+        </div>
+
+        <nav class="nav-menu">
+          <a href="{% url 'admin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+
+          <a href="{% url 'user_management' %}" class="nav-item {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}">
+            <span class="icon">👥</span>
+            <span>Users</span>
+          </a>
+
+          <a href="{% url 'list' %}" class="nav-item {% if request.path|slice:':20' == '/admin-panel/product' %}active{% endif %}">
+            <span class="icon">📦</span>
+            <span>Products</span>
+          </a>
+          <a href="{% url 'admin_category_list' %}" class="nav-item 
+{% if request.resolver_match.url_name == 'admin_category_list' or request.resolver_match.url_name == 'add_category' or request.resolver_match.url_name == 'edit_category' or request.resolver_match.url_name == 'delete_category' %}
+active{% endif %}">
+            <span class="icon">🏷️</span>
+            <span>Categories</span>
+          </a>
+
+          <a href="{% url 'brand_list' %}" class="nav-item {% if request.resolver_match.url_name == 'brand_list' %}active{% endif %}">
+            <span class="icon">🏢</span>
+            <span>Brands</span>
+          </a>
+          <a href="{% url 'admin_order_list' %}" class="nav-item 
+{% if request.resolver_match.url_name == 'admin_order_list' or request.resolver_match.url_name == 'admin_order_detail' %}active{% endif %}">
+            <span class="icon">📋</span>
+            <span>Orders</span>
+          </a>
+          <a href="{% url 'admin_inventory' %}" class="nav-item {% if 'inventory' in request.path %}active{% endif %}">
+            <span class="icon">📦</span>
+            <span>Inventory</span>
+          </a>
+
+         <a href="{% url 'admin_offer_list' %}" 
+   class="nav-item {% if request.resolver_match.url_name == 'admin_offer_list' or request.resolver_match.url_name == 'admin_offer_create' %}active{% endif %}">
+  <span class="icon">🎁</span>
+  <span>Offers</span>
+</a>
+          <a href="{% url 'admin_coupon_list' %}" class="nav-item {% if 'coupons' in request.path %}active{% endif %}">
+            <span class="icon">🎫</span>
+            <span>Coupons</span>
+          </a>
+
+<a href="{% url 'admin_sales_report' %}" 
+   class="nav-item {% if request.resolver_match.url_name == 'admin_sales_report' %}active{% endif %}">
+  <span class="icon">📊</span>
+  <span>Sales Report</span>
+</a>
+          <a href="{% url 'admin_review_list' %}" class="nav-item {% if 'reviews' in request.path %}active{% endif %}">
+            <span class="icon">⭐</span>
+            <span>Reviews</span>
+          </a>
+        </nav>
+
+        <div class="sign-out">
+          <form method="POST" action="{% url 'admin_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="sign-out-btn">
+              <span>→</span>
+              <span>Sign Out</span>
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        {% if messages %}
+          <div class="django-messages">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}
+
+        {% endblock %}
+      </main>
+    </div>
+
+    {% block extra_js %}
+      <script>
+        setTimeout(function () {
+          let alerts = document.querySelectorAll('.alert')
+          alerts.forEach(function (alert) {
+            alert.style.opacity = '0'
+            alert.style.transform = 'translateY(-10px)'
+            setTimeout(() => alert.remove(), 500)
+          })
+        }, 3000)
+      </script>
+    {% endblock %}
+
+    <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
+  </body>
+</html>

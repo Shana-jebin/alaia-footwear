@@ -1,0 +1,194 @@
+{% extends 'user_profile/base_profile.html' %}
+{% load static %}
+
+{% block title %}My Wallet — ALAIA{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'user_profile/profile.css' %}">
+<link rel="stylesheet" href="{% static 'orders/wallet.css' %}">
+{% endblock %}
+
+{% block profile_content %}
+<div class="wl-wrap">
+  <div class="wl-title">My Wallet</div>
+
+  <!-- Balance card -->
+  <div class="wl-balance-card">
+    <div>
+      <div class="wl-balance-label">Available Balance</div>
+      <div class="wl-balance-amount">₹{{ wallet.balance|floatformat:0 }}</div>
+      <div class="wl-balance-sub">Refunds and cashbacks are added here</div>
+    </div>
+    <div class="wl-card-icon">
+      <svg width="24" height="24" fill="none" stroke="#c9a96e" stroke-width="1.5" viewBox="0 0 24 24">
+        <rect x="2" y="5" width="20" height="14" rx="2"/>
+        <path d="M16 12h.01"/>
+        <path d="M2 10h20"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Add Money -->
+  <div class="wl-add-wrap">
+    <div class="wl-add-title">Add Money to Wallet</div>
+
+    <div class="wl-quick-amounts">
+      <button type="button" class="wl-quick-btn" onclick="setAmount(100, this)">₹100</button>
+      <button type="button" class="wl-quick-btn" onclick="setAmount(500, this)">₹500</button>
+      <button type="button" class="wl-quick-btn" onclick="setAmount(1000, this)">₹1000</button>
+      <button type="button" class="wl-quick-btn" onclick="setAmount(2000, this)">₹2000</button>
+    </div>
+
+    <form method="POST" action="{% url 'orders:wallet_razorpay_order' %}" onsubmit="return validateAmount()">
+      {% csrf_token %}
+      <div class="wl-add-row">
+        <input
+          type="number"
+          id="addMoneyInput"
+          name="amount"
+          class="wl-add-input"
+          placeholder="Enter amount"
+          min="1"
+          max="10000"
+        >
+        <button type="button" class="wl-add-btn" onclick="payNow()">Add Money</button>
+      </div>
+      <div id="addMoneyMsg" class="wl-add-msg"></div>
+    </form>
+  </div>
+
+  <!-- Django messages (success/error from redirect) -->
+  {% if messages %}
+  <div class="wl-messages">
+    {% for message in messages %}
+    <div class="wl-add-msg {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Transactions -->
+  <div class="wl-section-title">Transaction History</div>
+
+  <div class="wl-tx-list">
+    {% for tx in transactions %}
+    <div class="wl-tx">
+      <div class="wl-tx-dot {{ tx.transaction_type }}">
+        {% if tx.transaction_type == 'credit' %}
+        <svg width="16" height="16" fill="none" stroke="#27ae60" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+        </svg>
+        {% else %}
+        <svg width="16" height="16" fill="none" stroke="#e74c3c" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+        </svg>
+        {% endif %}
+      </div>
+
+      <div class="wl-tx-info">
+        <div class="wl-tx-desc">
+          {{ tx.description|default:"Wallet transaction" }}
+        </div>
+        <div class="wl-tx-date">{{ tx.created_at|date:"d M Y, h:i A" }}</div>
+        {% if tx.order %}
+        <div class="wl-tx-order">Order #{{ tx.order.order_id }}</div>
+        {% endif %}
+      </div>
+
+      <div class="wl-tx-amount {{ tx.transaction_type }}">
+        {% if tx.transaction_type == 'credit' %}+{% else %}−{% endif %}₹{{ tx.amount|floatformat:0 }}
+      </div>
+    </div>
+    {% empty %}
+    <div class="wl-empty">
+      No transactions yet.<br>Refunds from cancelled or returned orders will appear here.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+function setAmount(val, btn) {
+  document.getElementById('addMoneyInput').value = val;
+  document.querySelectorAll('.wl-quick-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function validateAmount() {
+  const amount = parseFloat(document.getElementById('addMoneyInput').value);
+  const msg = document.getElementById('addMoneyMsg');
+
+  if (!amount || amount < 1) {
+    msg.textContent = 'Please enter a valid amount (minimum ₹1).';
+    msg.className = 'wl-add-msg error';
+    return false;
+  }
+
+  if (amount > 10000) {
+    msg.textContent = 'Maximum amount is ₹10,000.';
+    msg.className = 'wl-add-msg error';
+    return false;
+  }
+
+  return true;
+}
+
+function payNow() {
+  if (!validateAmount()) return;
+
+  const amount = document.getElementById('addMoneyInput').value;
+  const msg = document.getElementById('addMoneyMsg');
+  msg.textContent = 'Creating payment...';
+  msg.className = 'wl-add-msg';
+
+  fetch("{% url 'orders:wallet_razorpay_order' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "amount=" + amount
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      msg.textContent = data.error;
+      msg.className = 'wl-add-msg error';
+      return;
+    }
+
+    const origin = window.location.origin;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://api.razorpay.com/v1/checkout/embedded';
+
+    const addField = (name, value) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    };
+
+    addField('key_id', data.key);
+    addField('order_id', data.order_id);
+    addField('name', 'ALAIA');
+    addField('description', 'Wallet Top-up');
+    addField('amount', data.amount);
+    addField('currency', 'INR');
+    addField('prefill[name]', '{{ request.user.get_full_name|escapejs }}');
+    addField('prefill[email]', '{{ request.user.email|escapejs }}');
+    addField('callback_url', origin + "{% url 'orders:wallet_razorpay_callback' %}");
+    addField('cancel_url', origin + "{% url 'orders:wallet' %}");
+
+    document.body.appendChild(form);
+    form.submit();
+  })
+  .catch(err => {
+    msg.textContent = 'Something went wrong. Please try again.';
+    msg.className = 'wl-add-msg error';
+  });
+}
+</script>
+{% endblock %}
