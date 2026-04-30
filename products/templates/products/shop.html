@@ -62,11 +62,11 @@
   <div class="sort-wrap">
     <select class="sort-select" id="sortSelect">
       <option value="" {% if not sort %}selected{% endif %}>New Arrivals</option>
-      <option value="price_low_high" {% if sort=='price_low_high' %}selected{% endif %}>Price: Low → High</option>
-      <option value="price_high_low" {% if sort=='price_high_low' %}selected{% endif %}>Price: High → Low</option>
-      <option value="popularity" {% if sort=='popularity' %}selected{% endif %}>Popularity</option>
-      <option value="rating" {% if sort=='rating' %}selected{% endif %}>Top Rated</option>
-      <option value="discount" {% if sort=='discount' %}selected{% endif %}>Best Discount</option>
+      <option value="price_low_high" {% if sort == 'price_low_high' %}selected{% endif %}>Price: Low → High</option>
+      <option value="price_high_low" {% if sort == 'price_high_low' %}selected{% endif %}>Price: High → Low</option>
+      <option value="popularity" {% if sort == 'popularity' %}selected{% endif %}>Popularity</option>
+      <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Top Rated</option>
+      <option value="discount" {% if sort == 'discount' %}selected{% endif %}>Best Discount</option>
     </select>
     <span class="sort-arrow">▾</span>
   </div>
@@ -102,8 +102,7 @@
       <div class="filter-options">
         {% for cat in categories %}
         <label class="filter-option">
-          <input type="checkbox" class="cat-cb" value="{{ cat.id }}" {% if cat.id|stringformat:"s" in
-            selected_categories %}checked{% endif %}>
+          <input type="checkbox" class="cat-cb" value="{{ cat.id }}" {% if cat.id|stringformat:"s" in selected_categories %}checked{% endif %}>
           <span class="custom-check"></span>
           <span>{{ cat.name }}</span>
         </label>
@@ -117,8 +116,7 @@
       <div class="filter-options">
         {% for brand in brands %}
         <label class="filter-option">
-          <input type="checkbox" class="brand-cb" value="{{ brand.id }}" {% if brand.id|stringformat:"s" in
-            selected_brands %}checked{% endif %}>
+          <input type="checkbox" class="brand-cb" value="{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
           <span class="custom-check"></span>
           <span>{{ brand.name }}</span>
         </label>
@@ -132,8 +130,7 @@
       <div class="color-options">
         {% for color in available_colors %}
         <label class="color-swatch-wrap">
-          <input type="checkbox" class="color-cb" value="{{ color.value }}" {% if color.value in selected_colors
-            %}checked{% endif %}>
+          <input type="checkbox" class="color-cb" value="{{ color.value }}" {% if color.value in selected_colors %}checked{% endif %}>
           <span class="color-swatch" style="background:{{ color.hex }};"></span>
           <span class="swatch-tooltip">{{ color.label }}</span>
         </label>
@@ -160,8 +157,7 @@
       <div class="filter-options" style="max-height:120px;overflow-y:auto;padding-right:4px;">
         {% for occ in available_occasions %}
         <label class="filter-option">
-          <input type="checkbox" class="occ-cb" value="{{ occ.id }}" {% if occ.id|stringformat:"s" in selected_occasions
-            %}checked{% endif %}>
+          <input type="checkbox" class="occ-cb" value="{{ occ.id }}" {% if occ.id|stringformat:"s" in selected_occasions %}checked{% endif %}>
           <span class="custom-check"></span>
           <span>{{ occ.name }}</span>
         </label>
@@ -185,8 +181,7 @@
 </div>
 
 <!-- ── ACTIVE FILTER TAGS ────────────────────────────────── -->
-{% if selected_categories or selected_brands or selected_colors or selected_sizes or selected_occasions or price_min or
-price_max %}
+{% if selected_categories or selected_brands or selected_colors or selected_sizes or selected_occasions or price_min or price_max %}
 <div class="active-filters">
 
   {% for cat in categories %}
@@ -376,8 +371,7 @@ price_max %}
       {% for num in products.paginator.page_range %}
       {% if products.number == num %}
       <span class="page-btn active">{{ num }}</span>
-      {% elif num == 1 or num == products.paginator.num_pages or num >= products.number|add:"-2" and num <=
-        products.number|add:"2" %} <a class="page-btn" href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
+      {% elif num == 1 or num == products.paginator.num_pages or num >= products.number|add:"-2" and num <= products.number|add:"2" %} <a class="page-btn" href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
         {% elif num == products.number|add:"-3" or num == products.number|add:"3" %}
         <span class="page-dots">…</span>
         {% endif %}
