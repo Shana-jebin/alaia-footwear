@@ -176,3 +176,6 @@ for host in ALLOWED_HOSTS:
         CSRF_TRUSTED_ORIGINS.append(f'http://{host}')
         CSRF_TRUSTED_ORIGINS.append(f'https://{host}')
 
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
