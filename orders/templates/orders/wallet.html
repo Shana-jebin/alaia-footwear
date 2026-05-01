@@ -199,7 +199,8 @@
         form.submit();
       })
       .catch(err => {
-        msg.textContent = 'Something went wrong. Please try again.';
+        console.error("Fetch error:", err);
+        msg.textContent = 'Something went wrong (check console for details). Please try again.';
         msg.className = 'wl-add-msg error';
       });
   }
