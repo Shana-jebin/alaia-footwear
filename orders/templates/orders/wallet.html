@@ -171,7 +171,10 @@
           return;
         }
 
-        const origin = window.location.origin;
+        let origin = window.location.origin;
+        if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+            origin = origin.replace('http://', 'https://');
+        }
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'https://api.razorpay.com/v1/checkout/embedded';
