@@ -128,9 +128,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-function startPayment() {
+document.addEventListener("DOMContentLoaded", function() {
   const btn = document.getElementById('payBtn');
   btn.disabled    = true;
   btn.textContent = 'Redirecting to payment…';
@@ -146,8 +145,9 @@ function startPayment() {
     description:     'Wallet Top-up',
     amount:          '{{ amount_paise }}',
     currency:        'INR',
-    prefill_name:    '{{ user.get_full_name|escapejs }}',
-    prefill_email:   '{{ user.email|escapejs }}',
+    'prefill[name]': '{{ request.user.get_full_name|escapejs }}',
+    'prefill[email]': '{{ request.user.email|escapejs }}',
+    'prefill[contact]': '9999999999',
     callback_url:    '{{ callback_url }}',  
     cancel_url:      '{{ callback_url }}',  
   };
@@ -162,6 +162,6 @@ function startPayment() {
 
   document.body.appendChild(form);
   form.submit();
-}
+});
 </script>
 {% endblock %}

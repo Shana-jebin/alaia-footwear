@@ -91,10 +91,12 @@ def wallet_razorpay_order(request):
     try:
         amount = Decimal(str(request.POST.get('amount', 0)))
     except:
-        return JsonResponse({"error": "Invalid amount"}, status=400)
+        messages.error(request, "Invalid amount")
+        return redirect('orders:wallet')
 
     if amount < Decimal('1') or amount > Decimal('10000'):
-        return JsonResponse({"error": "Invalid amount"}, status=400)
+        messages.error(request, "Invalid amount")
+        return redirect('orders:wallet')
 
     client = razorpay.Client(
         auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
@@ -109,10 +111,16 @@ def wallet_razorpay_order(request):
         }
     })
 
-    return JsonResponse({
-        "key": settings.RAZORPAY_KEY_ID,
-        "amount": order["amount"],
-        "order_id": order["id"],
+    callback_url = request.build_absolute_uri(reverse('orders:wallet_razorpay_callback'))
+    if not callback_url.startswith('http://localhost') and not callback_url.startswith('http://127.0.0.1'):
+        callback_url = callback_url.replace('http://', 'https://')
+
+    return render(request, 'orders/wallet_payment.html', {
+        'amount': amount,
+        'amount_paise': order["amount"],
+        'razorpay_order_id': order["id"],
+        'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
+        'callback_url': callback_url,
     })
 
 @csrf_exempt

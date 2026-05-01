@@ -47,7 +47,7 @@
       <div class="wl-add-row">
         <input type="number" id="addMoneyInput" name="amount" class="wl-add-input" placeholder="Enter amount" min="1"
           max="10000">
-        <button type="button" class="wl-add-btn" onclick="payNow()">Add Money</button>
+        <button type="submit" class="wl-add-btn">Add Money</button>
       </div>
       <div id="addMoneyMsg" class="wl-add-msg"></div>
     </form>
@@ -144,69 +144,9 @@
       return false;
     }
 
-    return true;
-  }
-
-  function payNow() {
-    if (!validateAmount()) return;
-
-    const amount = document.getElementById('addMoneyInput').value;
-    const msg = document.getElementById('addMoneyMsg');
-    msg.textContent = 'Creating payment...';
+    msg.textContent = 'Preparing payment...';
     msg.className = 'wl-add-msg';
-
-    fetch("{% url 'orders:wallet_razorpay_order' %}", {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": "{{ csrf_token }}",
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: "amount=" + amount
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          msg.textContent = data.error;
-          msg.className = 'wl-add-msg error';
-          return;
-        }
-
-        let origin = window.location.origin;
-        if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
-            origin = origin.replace('http://', 'https://');
-        }
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = 'https://api.razorpay.com/v1/checkout/embedded';
-
-        const addField = (name, value) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = name;
-          input.value = value;
-          form.appendChild(input);
-        };
-
-        addField('key_id', data.key);
-        addField('order_id', data.order_id);
-        addField('name', 'ALAIA');
-        addField('description', 'Wallet Top-up');
-        addField('amount', data.amount);
-        addField('currency', 'INR');
-        addField('prefill[name]', '{{ request.user.get_full_name|escapejs }}');
-        addField('prefill[email]', '{{ request.user.email|escapejs }}');
-        addField('prefill[contact]', '9999999999'); // Added default contact to match order checkout
-        addField('callback_url', origin + "{% url 'orders:wallet_razorpay_callback' %}");
-        addField('cancel_url', origin + "{% url 'orders:wallet' %}");
-
-        document.body.appendChild(form);
-        form.submit();
-      })
-      .catch(err => {
-        console.error("Fetch error:", err);
-        msg.textContent = 'Something went wrong (check console for details). Please try again.';
-        msg.className = 'wl-add-msg error';
-      });
+    return true;
   }
 </script>
 {% endblock %}
