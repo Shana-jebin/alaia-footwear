@@ -168,50 +168,33 @@ function startPayment() {
   btn.disabled    = true;
   btn.textContent = 'Redirecting to Razorpay...';
 
-  var options = {
-    "key": "{{ RAZORPAY_KEY_ID }}",
-    "amount": "{{ amount_paise }}",
-    "currency": "INR",
-    "name": "ALAIA",
-    "description": "Order #{{ order.order_id }}",
-    "order_id": "{{ razorpay_order_id }}",
-    "handler": function (response){
-        // On success, create a hidden form and submit it to Django
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = "{% url 'orders:razorpay_callback' %}";
-        
-        const addField = (name, value) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            input.value = value;
-            form.appendChild(input);
-        };
-        
-        addField('razorpay_payment_id', response.razorpay_payment_id);
-        addField('razorpay_order_id', response.razorpay_order_id);
-        addField('razorpay_signature', response.razorpay_signature);
-        
-        document.body.appendChild(form);
-        form.submit();
-    },
-    "prefill": {
-        "name": "{{ order.full_name|escapejs }}",
-        "email": "{{ order.user.email|escapejs }}",
-        "contact": "{{ order.phone|default:'9999999999'|escapejs }}"
-    },
-    "theme": {
-        "color": "#2a2520"
-    }
+  const origin = window.location.origin;
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://api.razorpay.com/v1/checkout/embedded';
+
+  const addField = (name, value) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
   };
-  var rzp1 = new Razorpay(options);
-  rzp1.on('payment.failed', function (response){
-      window.location.href = "/orders/payment-failed/{{ order.order_id }}/";
-  });
-  
-  rzp1.open();
+
+  addField('key_id', '{{ RAZORPAY_KEY_ID }}');
+  addField('order_id', '{{ razorpay_order_id }}');
+  addField('name', 'ALAIA');
+  addField('description', 'Order #{{ order.order_id }}');
+  addField('amount', '{{ amount_paise }}');
+  addField('currency', 'INR');
+  addField('prefill[name]', '{{ order.full_name|escapejs }}');
+  addField('prefill[email]', '{{ order.user.email|escapejs }}');
+  addField('prefill[contact]', '{{ order.phone|default:"9999999999"|escapejs }}');
+  addField('callback_url', origin + "{% url 'orders:razorpay_callback' %}");
+  addField('cancel_url', origin + "/orders/payment-failed/{{ order.order_id }}/");
+
+  document.body.appendChild(form);
+  form.submit();
 }
 </script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 {% endblock %}

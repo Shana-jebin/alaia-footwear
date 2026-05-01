@@ -171,52 +171,36 @@
           return;
         }
 
-        var options = {
-            "key": data.key,
-            "amount": data.amount,
-            "currency": "INR",
-            "name": "ALAIA",
-            "description": "Wallet Top-up",
-            "order_id": data.order_id,
-            "handler": function (response){
-                // On success, create a hidden form and submit it to Django
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{% url 'orders:wallet_razorpay_callback' %}";
-                
-                const addField = (name, value) => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = name;
-                    input.value = value;
-                    form.appendChild(input);
-                };
-                
-                addField('razorpay_payment_id', response.razorpay_payment_id);
-                addField('razorpay_order_id', response.razorpay_order_id);
-                addField('razorpay_signature', response.razorpay_signature);
-                
-                document.body.appendChild(form);
-                form.submit();
-            },
-            "prefill": {
-                "name": "{{ request.user.get_full_name|escapejs }}",
-                "email": "{{ request.user.email|escapejs }}"
-            },
-            "theme": {
-                "color": "#2a2520"
-            }
+        let origin = window.location.origin;
+        if (!origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+            origin = origin.replace('http://', 'https://');
+        }
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://api.razorpay.com/v1/checkout/embedded';
+
+        const addField = (name, value) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = name;
+          input.value = value;
+          form.appendChild(input);
         };
-        var rzp1 = new Razorpay(options);
-        rzp1.on('payment.failed', function (response){
-            msg.textContent = 'Payment failed: ' + response.error.description;
-            msg.className = 'wl-add-msg error';
-        });
-        
-        // Clear message
-        msg.textContent = '';
-        msg.className = 'wl-add-msg';
-        rzp1.open();
+
+        addField('key_id', data.key);
+        addField('order_id', data.order_id);
+        addField('name', 'ALAIA');
+        addField('description', 'Wallet Top-up');
+        addField('amount', data.amount);
+        addField('currency', 'INR');
+        addField('prefill[name]', '{{ request.user.get_full_name|escapejs }}');
+        addField('prefill[email]', '{{ request.user.email|escapejs }}');
+        addField('prefill[contact]', '9999999999'); // Added default contact to match order checkout
+        addField('callback_url', origin + "{% url 'orders:wallet_razorpay_callback' %}");
+        addField('cancel_url', origin + "{% url 'orders:wallet' %}");
+
+        document.body.appendChild(form);
+        form.submit();
       })
       .catch(err => {
         console.error("Fetch error:", err);
@@ -225,5 +209,4 @@
       });
   }
 </script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 {% endblock %}
