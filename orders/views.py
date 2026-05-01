@@ -729,10 +729,17 @@ def return_item(request, order_id, item_id):
     })
 # ── WALLET PAGE ───────────────────────────────────────────────────
 
+from django.core.paginator import Paginator
+
 @login_required
 def wallet_page(request):
     wallet       = _get_wallet(request.user)
-    transactions = wallet.transactions.select_related('order').all()[:50]
+    transaction_list = wallet.transactions.select_related('order').all()
+    
+    paginator = Paginator(transaction_list, 10)
+    page_number = request.GET.get('page')
+    transactions = paginator.get_page(page_number)
+    
     return render(request, 'orders/wallet.html', {
         'wallet':       wallet,
         'transactions': transactions,
