@@ -430,19 +430,20 @@ def place_order(request):
             order.save()
 
             return JsonResponse({
-                "success": True,
-                "key": settings.RAZORPAY_KEY_ID,
-                "amount": payment['amount'],
-                "order_id": payment['id'],
-                "success_url": f"/orders/success/{order.order_id}/"
-            })
+            "success": True,
+            "key": settings.RAZORPAY_KEY_ID,
+            "amount": payment['amount'],
+            "order_id": payment['id'],
+            "success_url": f"/orders/success/{order.order_id}/"
+        })
 
         except Exception as e:
             print("RAZORPAY ERROR:", e)
+
             return JsonResponse({
                 "success": False,
                 "error": str(e)
-            }, status=500)
+            })
 
     return redirect('orders:order_success', order_id=order.order_id)
 

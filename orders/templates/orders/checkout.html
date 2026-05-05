@@ -435,8 +435,19 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       },
       body: new URLSearchParams(new FormData(this))
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res => {
+  console.log("RAW RESPONSE:", res);
+  return res.json();
+})
+  
+.then(data => {
+
+  console.log("FULL RESPONSE:", data);
+
+  if (!data.success) {
+    alert("Payment error: " + (data.error || "Unknown error"));
+    return;
+  }
       console.log("Razorpay data:", data);
 
       var options = {
