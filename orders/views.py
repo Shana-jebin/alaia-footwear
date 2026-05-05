@@ -297,9 +297,25 @@ def place_order(request):
         'variant', 'variant__product', 'variant__product__brand'
     ).prefetch_related('variant__images')
 
-    address_id     = request.POST.get('address_id')
-    payment_method = request.POST.get('payment_method', 'cod')
-    coupon_code    = request.POST.get('coupon_code', '').strip().upper()
+    import json
+
+    if 'application/json' in request.content_type:
+        data = json.loads(request.body)
+
+        address_id = data.get('address_id')
+        payment_method = data.get('payment_method')
+        coupon_code = data.get('coupon_code', '').strip().upper()
+    else:
+        address_id = request.POST.get('address_id')
+        payment_method = request.POST.get('payment_method')
+        coupon_code = request.POST.get('coupon_code', '').strip().upper()
+
+    # safety checks
+    if not address_id:
+        return JsonResponse({"error": "Address not selected"}, status=400)
+
+    if not payment_method:
+        return JsonResponse({"error": "Payment method not selected"}, status=400)
 
     address = get_object_or_404(Address, id=address_id, user=request.user)
 
