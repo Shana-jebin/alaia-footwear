@@ -306,6 +306,7 @@
 
 {% block extra_js %}
 {{ block.super }}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 // ── Constants ──────────────────────────────────────────────────
 const CSRF         = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
@@ -440,6 +441,9 @@ function updateTotals() {
 
 // ── Form submit ─────────────────────────────────────────────────
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+
+  const method = document.querySelector('input[name=payment_method]:checked')?.value;
+
   // Address check
   const addrSelected = document.querySelector('input[name=address_id]:checked');
   if (!addrSelected) {
@@ -448,18 +452,58 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     return;
   }
 
-  // Wallet balance re-check (edge case)
-  const method = document.querySelector('input[name=payment_method]:checked')?.value;
-  const total  = SUBTOTAL + SHIPPING - appliedDiscount;
-  if (method === 'wallet' && WALLET_BAL < total) {
+  // 👉 If ONLINE PAYMENT → STOP normal submit
+  if (method === 'online') {
     e.preventDefault();
-    alert('Insufficient wallet balance. Please choose another payment method.');
+
+    fetch("{% url 'orders:place_order' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": CSRF(),
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams(new FormData(this))
+    })
+    .then(res => res.json())
+    .then(data => {
+
+      var options = {
+        "key": data.key,
+        "amount": data.amount,
+        "currency": "INR",
+        "name": "ALAIA",
+        "order_id": data.order_id,
+
+        "handler": function (response) {
+          fetch("{% url 'orders:razorpay_callback' %}", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": CSRF(),
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(response)
+          })
+          .then(() => {
+            window.location.href = data.success_url;
+          });
+        }
+      };
+
+      var rzp = new Razorpay(options);
+      rzp.open();
+    });
+
     return;
   }
 
-  const btn       = document.getElementById('placeBtn');
-  btn.disabled    = true;
-  btn.textContent = 'Placing Order…';
+  // wallet check (same as before)
+  const total  = SUBTOTAL + SHIPPING - appliedDiscount;
+  if (method === 'wallet' && WALLET_BAL < total) {
+    e.preventDefault();
+    alert('Insufficient wallet balance.');
+    return;
+  }
+
 });
 </script>
 {% endblock %}
