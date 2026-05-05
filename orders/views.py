@@ -447,14 +447,17 @@ def place_order(request):
         order.save()
 
         return JsonResponse({
-            "success": True,   # ✅ VERY IMPORTANT
-            "key": settings.RAZORPAY_KEY_ID,
-            "amount": payment['amount'],
-            "order_id": payment['id'],
-            "success_url": f"/orders/success/{order.order_id}/"
-        })
+    "status": "online",
+    "key": settings.RAZORPAY_KEY_ID,
+    "amount": payment['amount'],
+    "order_id": payment['id'],
+    "success_url": f"/orders/success/{order.order_id}/"
+})
 
-    return redirect('orders:order_success', order_id=order.order_id)
+    return JsonResponse({
+    "status": "success",
+    "redirect_url": f"/orders/success/{order.order_id}/"
+})
 
 @login_required
 def razorpay_payment(request, order_id):
