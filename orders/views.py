@@ -434,14 +434,18 @@ def razorpay_payment(request, order_id):
             auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
         )
         rz_order = client.order.create({
-    'amount': int(float(order.total) * 100),
-    'currency': 'INR',
-    'receipt': order.order_id,
-    'payment_capture': 1,
-    'notes': {
-        'user_id': str(request.user.id)
-    }
+        'amount': int(float(order.total) * 100),
+        'currency': 'INR',
+        'receipt': order.order_id,
+        'payment_capture': 1,
+        'notes': {
+            'user_id': str(request.user.id)
+        }
 })
+        
+        print("RAZORPAY ORDER CREATED:", rz_order)
+
+
         order.razorpay_order_id = rz_order['id']
         order.save(update_fields=['razorpay_order_id'])
     except Exception as e:
