@@ -154,7 +154,8 @@
           <!-- Online / Razorpay -->
           <label class="pay-option" id="pay-online">
             <input type="radio" name="payment_method" value="online"
-                   onchange="selectPay('online')">
+       checked
+       onchange="selectPay('online')">
             <div class="pay-dot"></div>
             <div class="pay-info">
               <div class="pay-label">Online Payment</div>
@@ -308,47 +309,51 @@
 {{ block.super }}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-// ── Constants ──────────────────────────────────────────────────
-const CSRF         = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-const SUBTOTAL     = {{ subtotal }};
-const SHIPPING     = {{ shipping }};
-const WALLET_BAL   = {{ wallet.balance|default:0 }};
+
+// ── Constants ─────────────────────────────────────────────
+const CSRF       = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+const SUBTOTAL   = {{ subtotal }};
+const SHIPPING   = {{ shipping }};
+const WALLET_BAL = {{ wallet.balance|default:0 }};
 
 let appliedDiscount = 0;
 let appliedCode     = '';
 
-// ── Address ────────────────────────────────────────────────────
+
+// ── Address ──────────────────────────────────────────────
 function selectAddr(id) {
   document.querySelectorAll('.addr-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('addr-label-' + id).classList.add('selected');
 }
 
-// ── Payment method ─────────────────────────────────────────────
+
+// ── Payment method ───────────────────────────────────────
 function selectPay(val) {
   document.querySelectorAll('.pay-option').forEach(p => p.classList.remove('selected'));
 
   const el = document.getElementById('pay-' + val);
   if (!el) return;
+
   el.classList.add('selected');
   el.querySelector('input').checked = true;
 
-  // Wallet warning & place-order button state
   const warning  = document.getElementById('walletWarning');
   const placeBtn = document.getElementById('placeBtn');
   const total    = SUBTOTAL + SHIPPING - appliedDiscount;
 
   if (val === 'wallet' && WALLET_BAL < total) {
-    warning.style.display  = 'block';
-    placeBtn.disabled      = true;
-    placeBtn.textContent   = 'Insufficient Wallet Balance';
+    warning.style.display = 'block';
+    placeBtn.disabled = true;
+    placeBtn.textContent = 'Insufficient Wallet Balance';
   } else {
-    warning.style.display  = 'none';
-    placeBtn.disabled      = false;
-    placeBtn.textContent   = 'Place Order';
+    warning.style.display = 'none';
+    placeBtn.disabled = false;
+    placeBtn.textContent = 'Place Order';
   }
 }
 
-// ── Coupon ─────────────────────────────────────────────────────
+
+// ── Coupon ───────────────────────────────────────────────
 function useCoupon(code) {
   document.getElementById('couponInput').value = code;
   applyCoupon();
@@ -364,9 +369,8 @@ function applyCoupon() {
     return;
   }
 
-  // Prevent applying another coupon if one is already applied
   if (appliedCode) {
-    msg.textContent = `Coupon "${appliedCode}" is already applied. Remove it first.`;
+    msg.textContent = `Coupon "${appliedCode}" is already applied.`;
     msg.className   = 'coupon-msg err';
     return;
   }
@@ -374,85 +378,52 @@ function applyCoupon() {
   fetch("{% url 'orders:apply_coupon' %}", {
     method:  'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF() },
-    body:    JSON.stringify({ code, subtotal: SUBTOTAL }),
+    body: JSON.stringify({ code, subtotal: SUBTOTAL })
   })
   .then(r => r.json())
   .then(d => {
     if (d.success) {
       appliedDiscount = d.discount;
       appliedCode     = d.code;
+
       document.getElementById('appliedCouponCode').value = appliedCode;
-      document.getElementById('couponInput').value       = appliedCode;
-      document.getElementById('couponInput').readOnly    = true;
-      document.getElementById('couponApplyBtn').style.display  = 'none';
-      document.getElementById('couponRemoveBtn').classList.add('show');
+
       msg.textContent = d.message;
       msg.className   = 'coupon-msg ok';
+
       updateTotals();
     } else {
       msg.textContent = d.error;
       msg.className   = 'coupon-msg err';
     }
-  })
-  .catch(() => {
-    msg.textContent = 'Something went wrong. Please try again.';
-    msg.className   = 'coupon-msg err';
   });
 }
 
-function removeCoupon() {
-  appliedDiscount = 0;
-  appliedCode     = '';
-  document.getElementById('appliedCouponCode').value          = '';
-  document.getElementById('couponInput').value                = '';
-  document.getElementById('couponInput').readOnly             = false;
-  document.getElementById('couponApplyBtn').style.display     = '';
-  document.getElementById('couponRemoveBtn').classList.remove('show');
-
-  const msg       = document.getElementById('couponMsg');
-  msg.textContent = 'Coupon removed.';
-  msg.className   = 'coupon-msg';
-
-  updateTotals();
-
-  // Re-check wallet state after discount removed
-  const currentMethod = document.querySelector('input[name=payment_method]:checked')?.value;
-  if (currentMethod) selectPay(currentMethod);
-}
-
-// ── Totals ──────────────────────────────────────────────────────
 function updateTotals() {
-  const discRow   = document.getElementById('discountRow');
-  const discAmt   = document.getElementById('discountAmt');
-  const discLabel = document.getElementById('discountLabel');
-  const grandTotal= document.getElementById('grandTotal');
-
-  if (appliedDiscount > 0) {
-    discRow.style.display = 'flex';
-    discLabel.textContent = `Discount (${appliedCode})`;
-    discAmt.textContent   = `− ₹${appliedDiscount.toFixed(0)}`;
-  } else {
-    discRow.style.display = 'none';
-  }
-
-  const newTotal = SUBTOTAL + SHIPPING - appliedDiscount;
-  grandTotal.textContent = `₹${Math.max(newTotal, 0).toFixed(0)}`;
+  const total = SUBTOTAL + SHIPPING - appliedDiscount;
+  document.getElementById('grandTotal').textContent = `₹${Math.max(total, 0)}`;
 }
 
-// ── Form submit ─────────────────────────────────────────────────
+
+// ── FORM SUBMIT (MAIN FIX HERE) ───────────────────────────
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
   const method = document.querySelector('input[name=payment_method]:checked')?.value;
+  const addr   = document.querySelector('input[name=address_id]:checked');
 
-  // Address check
-  const addrSelected = document.querySelector('input[name=address_id]:checked');
-  if (!addrSelected) {
+  if (!addr) {
     e.preventDefault();
-    alert('Please select a delivery address.');
+    alert("Please select address");
     return;
   }
 
-  
+  if (!method) {
+    e.preventDefault();
+    alert("Please select payment method");
+    return;
+  }
+
+  // ✅ ONLINE PAYMENT
   if (method === 'online') {
     e.preventDefault();
 
@@ -465,43 +436,17 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       body: new URLSearchParams(new FormData(this))
     })
     .then(res => res.json())
-.then(data => {
-    console.log("JSON:", data);
-
-    var options = {
-        "key": data.key,
-        "amount": data.amount,
-        "currency": "INR",
-        "name": "ALAIA",
-        "order_id": data.order_id,
-
-        "handler": function (response) {
-            fetch("{% url 'orders:razorpay_callback' %}", {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": CSRF(),
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(response)
-            })
-            .then(() => {
-                window.location.href = data.success_url;
-            });
-        }
-    };
-
-    var rzp = new Razorpay(options);
-    rzp.open();
-});
+    .then(data => {
+      console.log("Razorpay data:", data);
 
       var options = {
-        "key": data.key,
-        "amount": data.amount,
-        "currency": "INR",
-        "name": "ALAIA",
-        "order_id": data.order_id,
+        key: data.key,
+        amount: data.amount,
+        currency: "INR",
+        name: "ALAIA",
+        order_id: data.order_id,
 
-        "handler": function (response) {
+        handler: function (response) {
           fetch("{% url 'orders:razorpay_callback' %}", {
             method: "POST",
             headers: {
@@ -518,19 +463,31 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
       var rzp = new Razorpay(options);
       rzp.open();
+    })
+    .catch(err => {
+      console.error("Payment error:", err);
+      alert("Something went wrong. Try again.");
     });
 
     return;
   }
 
-  // wallet check (same as before)
-  const total  = SUBTOTAL + SHIPPING - appliedDiscount;
+  // ✅ WALLET CHECK
+  const total = SUBTOTAL + SHIPPING - appliedDiscount;
+
   if (method === 'wallet' && WALLET_BAL < total) {
     e.preventDefault();
-    alert('Insufficient wallet balance.');
+    alert("Insufficient wallet balance");
     return;
   }
 
 });
+
+
+// ── DEFAULT SELECT ───────────────────────────────────────
+window.onload = function() {
+  selectPay('online');
+};
+
 </script>
 {% endblock %}
