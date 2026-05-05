@@ -447,6 +447,7 @@ def place_order(request):
         order.save()
 
         return JsonResponse({
+    "success": True,  
     "status": "online",
     "key": settings.RAZORPAY_KEY_ID,
     "amount": payment['amount'],
@@ -455,6 +456,7 @@ def place_order(request):
 })
 
     return JsonResponse({
+    "success": True,  
     "status": "success",
     "redirect_url": f"/orders/success/{order.order_id}/"
 })

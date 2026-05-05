@@ -287,10 +287,8 @@
       <span id="grandTotal">₹{{ total|floatformat:0 }}</span>
     </div>
 
-    <button type="submit" form="checkoutForm" class="btn-place" id="placeBtn"
-            {% if not addresses %}disabled{% endif %}>
-      {% if not addresses %}Add Address First{% else %}Place Order{% endif %}
-    </button>
+   <button type="button" class="btn-place" id="placeOrderBtn"
+    {% if not addresses %}disabled{% endif %}>
 
     <div class="secure-note">
       <svg width="12" height="12" fill="none" stroke="currentColor"
