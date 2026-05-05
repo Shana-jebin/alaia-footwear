@@ -411,33 +411,32 @@ def place_order(request):
         coupon.save(update_fields=['used_count'])
 
     cart.items.all().delete()
-
-  
     if payment_method == 'online':
         import razorpay
-    from django.http import JsonResponse
+        from django.http import JsonResponse
 
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client = razorpay.Client(
+            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+        )
 
-    payment = client.order.create({
-        "amount": int(total * 100),
-        "currency": "INR",
-        "payment_capture": 1
-    })
+        payment = client.order.create({
+            "amount": int(order.total * 100),
+            "currency": "INR",
+            "payment_capture": 1
+        })
 
-    order.razorpay_order_id = payment['id']
-    order.save()
+        order.razorpay_order_id = payment['id']
+        order.save()
 
-    return JsonResponse({
-        "key": settings.RAZORPAY_KEY_ID,
-        "amount": payment['amount'],
-        "order_id": payment['id'],
-        "success_url": f"/orders/success/{order.order_id}/"
-    })
+        return JsonResponse({
+            "key": settings.RAZORPAY_KEY_ID,
+            "amount": payment['amount'],
+            "order_id": payment['id'],
+            "success_url": f"/orders/success/{order.order_id}/"
+        })
+
 
     return redirect('orders:order_success', order_id=order.order_id)
-
-
 
 @login_required
 def razorpay_payment(request, order_id):
@@ -546,7 +545,26 @@ def retry_payment(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     if order.payment_status == 'paid':
         return redirect('orders:order_success', order_id=order.order_id)
-    return redirect('orders:razorpay_payment', order_id=order.order_id)
+    from django.http import JsonResponse
+    import razorpay
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+    payment = client.order.create({
+        "amount": int(total * 100),
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    order.razorpay_order_id = payment['id']
+    order.save()
+
+    return JsonResponse({
+        "key": settings.RAZORPAY_KEY_ID,
+        "amount": payment['amount'],
+        "order_id": payment['id'],
+        "success_url": f"/orders/success/{order.order_id}/"
+    })
 
 
 
