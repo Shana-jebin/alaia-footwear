@@ -504,10 +504,11 @@ def razorpay_callback(request):
         return redirect('orders:order_success', order_id=order.order_id)
 
     except Exception as e:
-        print("Signature error:", e)
-        order.payment_status = 'failed'
-        order.save(update_fields=['payment_status', 'updated_at'])
-        return redirect('orders:payment_failed', order_id=order.order_id)
+        print("=== SIGNATURE ERROR ===")
+        print("Order ID:", razorpay_order_id)
+        print("Payment ID:", razorpay_payment_id)
+        print("Signature:", razorpay_signature)
+        print("Error:", str(e))
 @login_required
 def payment_failed(request, order_id):
     """Payment failure page with retry option."""
