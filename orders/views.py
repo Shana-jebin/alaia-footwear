@@ -414,7 +414,26 @@ def place_order(request):
 
   
     if payment_method == 'online':
-        return redirect('orders:razorpay_payment', order_id=order.order_id)
+        import razorpay
+    from django.http import JsonResponse
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+    payment = client.order.create({
+        "amount": int(total * 100),
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    order.razorpay_order_id = payment['id']
+    order.save()
+
+    return JsonResponse({
+        "key": settings.RAZORPAY_KEY_ID,
+        "amount": payment['amount'],
+        "order_id": payment['id'],
+        "success_url": f"/orders/success/{order.order_id}/"
+    })
 
     return redirect('orders:order_success', order_id=order.order_id)
 
