@@ -342,8 +342,10 @@ def place_order(request):
 
   
     if payment_method == "cod" and total > 2500:
-        messages.error(request, "Cash on Delivery is only available for orders up to ₹2500.")
-        return redirect('orders:checkout')
+        return JsonResponse({
+            "success": False,
+            "error": "COD not available for this amount"
+        })
 
     
     if payment_method == 'wallet':
@@ -415,35 +417,26 @@ def place_order(request):
         import razorpay
         from django.http import JsonResponse
 
-        try:
-            client = razorpay.Client(
-                auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
-            )
+        client = razorpay.Client(
+            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+        )
 
-            payment = client.order.create({
-                "amount": int(order.total * 100),
-                "currency": "INR",
-                "payment_capture": 1
-            })
+        payment = client.order.create({
+            "amount": int(order.total * 100),
+            "currency": "INR",
+            "payment_capture": 1
+        })
 
-            order.razorpay_order_id = payment['id']
-            order.save()
+        order.razorpay_order_id = payment['id']
+        order.save()
 
-            return JsonResponse({
-            "success": True,
+        return JsonResponse({
+            "success": True,   # ✅ VERY IMPORTANT
             "key": settings.RAZORPAY_KEY_ID,
             "amount": payment['amount'],
             "order_id": payment['id'],
             "success_url": f"/orders/success/{order.order_id}/"
         })
-
-        except Exception as e:
-            print("RAZORPAY ERROR:", e)
-
-            return JsonResponse({
-                "success": False,
-                "error": str(e)
-            })
 
     return redirect('orders:order_success', order_id=order.order_id)
 
