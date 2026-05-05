@@ -464,7 +464,10 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       },
       body: new URLSearchParams(new FormData(this))
     })
-    .then(res => res.json())
+    .then(res => res.text())
+.then(data => {
+    console.log("RESPONSE:", data);
+})
     .then(data => {
 
       var options = {
