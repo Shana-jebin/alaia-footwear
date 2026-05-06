@@ -180,6 +180,7 @@
                      name="first_name"
                      id="firstNameInput"
                      value="{{ request.user.first_name }}" />
+              <div class="field-error" id="firstNameError" style="color: var(--red); font-size: 11px; margin-top: 4px; display: none;"></div>
             </div>
 
             <div class="form-group">
@@ -189,6 +190,7 @@
                      name="last_name"
                      id="lastNameInput"
                      value="{{ request.user.last_name }}" />
+              <div class="field-error" id="lastNameError" style="color: var(--red); font-size: 11px; margin-top: 4px; display: none;"></div>
             </div>
 
             <div class="form-group">
@@ -199,6 +201,7 @@
                      id="emailInput"
                      value="{{ request.user.email }}"
                      {% if is_google_user %}readonly{% endif %} />
+              <div class="field-error" id="emailError" style="color: var(--red); font-size: 11px; margin-top: 4px; display: none;"></div>
               {% if is_google_user %}
                 <small style="color: var(--muted); font-size: 11px; letter-spacing: 0.5px;">
                   Email cannot be changed — linked via Google.
@@ -219,6 +222,7 @@
                      id="phoneInput"
                      value="{{ request.user.profile.phone|default:'' }}"
                      class="form-input" />
+              <div class="field-error" id="phoneError" style="color: var(--red); font-size: 11px; margin-top: 4px; display: none;"></div>
             </div>
 
             <div class="action-buttons" style="grid-column: 1 / -1;">

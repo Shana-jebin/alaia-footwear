@@ -97,54 +97,63 @@ document.addEventListener("DOMContentLoaded", function () {
             const email = document.getElementById("emailInput")?.value.trim();
             const phone = document.getElementById("phoneInput")?.value.trim();
             
+            // Helper functions for inline errors
+            const clearErrors = () => {
+                ['firstNameError', 'lastNameError', 'emailError', 'phoneError'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.style.display = 'none'; el.textContent = ''; }
+                });
+            };
+            const showError = (id, msg) => {
+                const el = document.getElementById(id);
+                if (el) { el.style.display = 'block'; el.textContent = msg; }
+            };
+            
+            clearErrors();
+            let hasError = false;
+            
             const nameRegex = /^[A-Za-z\s]+$/;
             
             if (!firstName) {
-                e.preventDefault();
-                showNotification("First name is required.", "error");
-                return;
-            }
-            if (firstName.length < 2) {
-                e.preventDefault();
-                showNotification("First name must be at least 2 characters.", "error");
-                return;
-            }
-            if (!nameRegex.test(firstName)) {
-                e.preventDefault();
-                showNotification("First name can only contain letters.", "error");
-                return;
+                showError('firstNameError', "First name is required.");
+                hasError = true;
+            } else if (firstName.length < 2) {
+                showError('firstNameError', "First name must be at least 2 characters.");
+                hasError = true;
+            } else if (!nameRegex.test(firstName)) {
+                showError('firstNameError', "First name can only contain letters.");
+                hasError = true;
             }
             
             if (!lastName) {
-                e.preventDefault();
-                showNotification("Last name is required.", "error");
-                return;
-            }
-            if (!nameRegex.test(lastName)) {
-                e.preventDefault();
-                showNotification("Last name can only contain letters.", "error");
-                return;
+                showError('lastNameError', "Last name is required.");
+                hasError = true;
+            } else if (!nameRegex.test(lastName)) {
+                showError('lastNameError', "Last name can only contain letters.");
+                hasError = true;
             }
             
             if (!email) {
-                e.preventDefault();
-                showNotification("Email address is required.", "error");
-                return;
-            }
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                e.preventDefault();
-                showNotification("Please enter a valid email address.", "error");
-                return;
+                showError('emailError', "Email address is required.");
+                hasError = true;
+            } else {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showError('emailError', "Please enter a valid email address.");
+                    hasError = true;
+                }
             }
             
             if (phone && phone !== "") {
                 const phoneRegex = /^[0-9]{10}$/;
                 if (!phoneRegex.test(phone)) {
-                    e.preventDefault();
-                    showNotification("Phone number must be exactly 10 digits.", "error");
-                    return;
+                    showError('phoneError', "Phone number must be exactly 10 digits.");
+                    hasError = true;
                 }
+            }
+            
+            if (hasError) {
+                e.preventDefault();
             }
         });
     }

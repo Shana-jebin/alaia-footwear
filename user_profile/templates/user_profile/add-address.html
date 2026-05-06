@@ -125,9 +125,7 @@
     const cancelBtn = document.getElementById('cancelBtn');
     
     cancelBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to cancel?')) {
-        window.location.href = "{% url 'address_list' %}";
-      }
+      window.location.href = "{% url 'address_list' %}";
     });
 
     const addressForm = document.getElementById('addressForm');
