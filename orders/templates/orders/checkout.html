@@ -307,7 +307,6 @@
 
 {% block extra_js %}
 {{ block.super }}
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 
 // ── Constants ─────────────────────────
@@ -391,103 +390,41 @@ function updateTotals() {
 }
 
 
-// ── MAIN SUBMIT (FIXED) ─────────────
+// ── FORM SUBMIT ─────────────────────────
+// All payment methods use normal form POST.
+// For 'online': server creates order then redirects to Razorpay embedded page.
+// For 'cod' / 'wallet': server creates order then redirects to success page.
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
   const method = document.querySelector('input[name=payment_method]:checked')?.value;
   const addr   = document.querySelector('input[name=address_id]:checked');
 
-  console.log("Selected method:", method);
-
   if (!addr) {
     e.preventDefault();
-    alert("Select address");
+    alert("Please select a delivery address.");
     return;
   }
 
   if (!method) {
     e.preventDefault();
-    alert("Select payment method");
+    alert("Please select a payment method.");
     return;
   }
 
-  // ✅ ONLINE PAYMENT
-  if (method === 'online') {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-
-    fetch("{% url 'orders:place_order' %}", {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": CSRF()
-      },
-      body: formData
-    })
-    .then(res => res.text())
-    .then(text => {
-
-      console.log("SERVER RESPONSE:", text);
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        alert("Server returned error (HTML)");
-        return;
-      }
-
-      if (!data.success) {
-        alert(data.error || "Payment failed");
-        return;
-      }
-
-      var options = {
-        key: data.key,
-        amount: data.amount,
-        currency: "INR",
-        name: "ALAIA",
-        order_id: data.order_id,
-
-        handler: function (response) {
-          fetch("{% url 'orders:razorpay_callback' %}", {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": CSRF(),
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(response)
-          }).then(res => {
-            if (res.redirected) {
-              window.location.href = res.url;
-            } else {
-              window.location.href = data.success_url;
-            }
-          }).catch(err => {
-            console.error(err);
-            window.location.href = "/orders/";
-          });
-        }
-      };
-
-      new Razorpay(options).open();
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Something went wrong");
-    });
-
-    return;
-  }
-
-  // ✅ WALLET CHECK
+  // Wallet balance guard
   const total = SUBTOTAL + SHIPPING - appliedDiscount;
-
   if (method === 'wallet' && WALLET_BAL < total) {
     e.preventDefault();
-    alert("Insufficient wallet balance");
+    alert("Insufficient wallet balance. Please top up or choose another payment method.");
+    return;
   }
 
+  // Disable button to prevent double-submit
+  const placeBtn = document.getElementById('placeBtn');
+  placeBtn.disabled = true;
+  placeBtn.textContent = method === 'online' ? 'Redirecting to payment…' : 'Placing order…';
+
+  // Let the form POST normally — server handles the redirect
 });
 
 

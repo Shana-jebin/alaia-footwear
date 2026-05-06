@@ -145,7 +145,7 @@
       </div>
     </div>
 
-    <button class="pay-btn" id="payBtn" onclick="startPayment()">
+    <button class="pay-btn" id="payBtn">
       Pay ₹{{ order.total|floatformat:0 }}
     </button>
 
@@ -163,38 +163,39 @@
 
 {% block extra_js %}
 <script>
-function startPayment() {
+document.addEventListener('DOMContentLoaded', function() {
   const btn = document.getElementById('payBtn');
   btn.disabled    = true;
-  btn.textContent = 'Redirecting to Razorpay...';
+  btn.textContent = 'Redirecting to payment…';
 
-  const origin = window.location.origin;
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = 'https://api.razorpay.com/v1/checkout/embedded';
 
-  const addField = (name, value) => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
+  const fields = {
+    key_id:               '{{ RAZORPAY_KEY_ID }}',
+    order_id:             '{{ razorpay_order_id }}',
+    name:                 'ALAIA',
+    description:          'Order #{{ order.order_id }}',
+    amount:               '{{ amount_paise }}',
+    currency:             'INR',
+    'prefill[name]':      '{{ order.full_name|escapejs }}',
+    'prefill[email]':     '{{ order.user.email|escapejs }}',
+    'prefill[contact]':   '{{ order.phone|default:"9999999999"|escapejs }}',
+    callback_url:         window.location.origin + "{% url 'orders:razorpay_callback' %}",
+    cancel_url:           window.location.origin + "/orders/payment-failed/{{ order.order_id }}/",
   };
 
-  addField('key_id', '{{ RAZORPAY_KEY_ID }}');
-  addField('order_id', '{{ razorpay_order_id }}');
-  addField('name', 'ALAIA');
-  addField('description', 'Order #{{ order.order_id }}');
-  addField('amount', '{{ amount_paise }}');
-  addField('currency', 'INR');
-  addField('prefill[name]', '{{ order.full_name|escapejs }}');
-  addField('prefill[email]', '{{ order.user.email|escapejs }}');
-  addField('prefill[contact]', '{{ order.phone|default:"9999999999"|escapejs }}');
-  addField('callback_url', origin + "{% url 'orders:razorpay_callback' %}");
-  addField('cancel_url', origin + "/orders/payment-failed/{{ order.order_id }}/");
+  for (const [key, val] of Object.entries(fields)) {
+    const input   = document.createElement('input');
+    input.type    = 'hidden';
+    input.name    = key;
+    input.value   = val;
+    form.appendChild(input);
+  }
 
   document.body.appendChild(form);
   form.submit();
-}
+});
 </script>
 {% endblock %}

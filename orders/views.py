@@ -301,31 +301,32 @@ def place_order(request):
 
     if 'application/json' in request.content_type:
         data = json.loads(request.body)
-
-        address_id = data.get('address_id')
+        address_id     = data.get('address_id')
         payment_method = data.get('payment_method')
-        coupon_code = data.get('coupon_code', '').strip().upper()
+        coupon_code    = data.get('coupon_code', '').strip().upper()
     else:
-        address_id = request.POST.get('address_id')
+        address_id     = request.POST.get('address_id')
         payment_method = request.POST.get('payment_method')
-        coupon_code = request.POST.get('coupon_code', '').strip().upper()
+        coupon_code    = request.POST.get('coupon_code', '').strip().upper()
 
     # safety checks
     if not address_id:
-        return JsonResponse({"error": "Address not selected"}, status=400)
+        messages.error(request, "Please select a delivery address.")
+        return redirect('orders:checkout')
 
     if not payment_method:
-        return JsonResponse({"error": "Payment method not selected"}, status=400)
+        messages.error(request, "Please select a payment method.")
+        return redirect('orders:checkout')
 
     address = get_object_or_404(Address, id=address_id, user=request.user)
 
     valid_items = []
     for item in items:
         v = item.variant
-        is_available = (v and not v.is_deleted and v.product.is_active 
-                        and not v.product.is_deleted and v.product.category.is_active 
+        is_available = (v and not v.is_deleted and v.product.is_active
+                        and not v.product.is_deleted and v.product.category.is_active
                         and v.product.brand.is_active)
-        
+
         if not is_available:
             messages.error(request, f"'{v.product.name if v else 'Item'}' is no longer available.")
             return redirect('orders:cart')
@@ -339,7 +340,6 @@ def place_order(request):
         messages.error(request, "No valid items to order.")
         return redirect('orders:cart')
 
-  
     subtotal = sum(
         (Decimal(str(item.variant.final_price)) * item.quantity for item in valid_items),
         Decimal("0.00")
@@ -356,20 +356,17 @@ def place_order(request):
 
     total = subtotal + shipping - discount
 
-  
     if payment_method == "cod" and total > 2500:
-        return JsonResponse({
-            "success": False,
-            "error": "COD not available for this amount"
-        })
+        messages.error(request, "COD is not available for orders above ₹2500.")
+        return redirect('orders:checkout')
 
-    
     if payment_method == 'wallet':
         wallet = _get_wallet(request.user)
         if wallet.balance < total:
             messages.error(request, f"Insufficient wallet balance. Your balance: ₹{wallet.balance:.0f}")
             return redirect('orders:checkout')
 
+    # ── Create the order (stock deducted after payment for online) ──
     order = Order.objects.create(
         user=request.user,
         full_name=address.full_name,
@@ -389,16 +386,10 @@ def place_order(request):
         payment_status='paid' if payment_method in ('wallet',) else 'pending',
     )
 
-   
     for item in valid_items:
         v   = item.variant
         img = v.images.first()
-
-        if img and img.image:
-            image_url = img.image.url
-
-        else:
-            image_url = ''
+        image_url = img.image.url if (img and img.image) else ''
         OrderItem.objects.create(
             order=order,
             variant=v,
@@ -410,10 +401,18 @@ def place_order(request):
             quantity=item.quantity,
             unit_price=v.final_price,
         )
+
+    # ── Online payment: redirect to Razorpay embedded checkout ──
+    if payment_method == 'online':
+        # Stock and cart cleared only AFTER payment confirmed in razorpay_callback
+        return redirect('orders:razorpay_payment', order_id=order.order_id)
+
+    # ── COD / Wallet: deduct stock and clear cart immediately ──
+    for item in valid_items:
+        v = item.variant
         v.stock -= item.quantity
         v.save(update_fields=['stock'])
 
-    
     if payment_method == 'wallet':
         wallet = _get_wallet(request.user)
         wallet.debit(
@@ -422,44 +421,14 @@ def place_order(request):
             order=order,
         )
 
-  
     if coupon:
         CouponUsage.objects.create(coupon=coupon, user=request.user, order=order)
         coupon.used_count += 1
         coupon.save(update_fields=['used_count'])
 
     cart.items.all().delete()
-    if payment_method == 'online':
-        import razorpay
-        from django.http import JsonResponse
 
-        client = razorpay.Client(
-            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
-        )
-
-        payment = client.order.create({
-            "amount": int(order.total * 100),
-            "currency": "INR",
-            "payment_capture": 1
-        })
-
-        order.razorpay_order_id = payment['id']
-        order.save()
-
-        return JsonResponse({
-    "success": True,  
-    "status": "online",
-    "key": settings.RAZORPAY_KEY_ID,
-    "amount": payment['amount'],
-    "order_id": payment['id'],
-    "success_url": f"/orders/success/{order.order_id}/"
-})
-
-    return JsonResponse({
-    "success": True,  
-    "status": "success",
-    "redirect_url": f"/orders/success/{order.order_id}/"
-})
+    return redirect('orders:order_success', order_id=order.order_id)
 
 @login_required
 def razorpay_payment(request, order_id):
@@ -503,24 +472,16 @@ def razorpay_payment(request, order_id):
 @require_POST
 def razorpay_callback(request):
     print("=== RAZORPAY CALLBACK ===")
-    
-    # Handle JSON payloads (from fetch in checkout.html)
-    if 'application/json' in request.content_type:
-        import json
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            data = {}
-    else:
-        # Handle Form Data (from razorpay_payment.html callback)
-        data = request.POST
-        
+
+    # Handle Form Data (from razorpay_payment.html embedded checkout callback)
+    data = request.POST
     print("DATA:", data)
-    
+
     razorpay_payment_id = data.get('razorpay_payment_id', '')
     razorpay_order_id   = data.get('razorpay_order_id', '')
     razorpay_signature  = data.get('razorpay_signature', '')
 
+    # Payment failed / cancelled by Razorpay
     if data.get('error[code]') or data.get('error[description]'):
         rz_order_id = data.get('error[metadata][order_id]', '')
         try:
@@ -555,10 +516,38 @@ def razorpay_callback(request):
             'razorpay_signature':  razorpay_signature,
         })
 
-        order.razorpay_payment_id = razorpay_payment_id
-        order.payment_status      = 'paid'
-        order.status              = 'confirmed'
-        order.save(update_fields=['razorpay_payment_id', 'payment_status', 'status', 'updated_at'])
+        # ── Payment verified: deduct stock, clear cart, mark paid ──
+        with transaction.atomic():
+            order.razorpay_payment_id = razorpay_payment_id
+            order.payment_status      = 'paid'
+            order.status              = 'confirmed'
+            order.save(update_fields=['razorpay_payment_id', 'payment_status', 'status', 'updated_at'])
+
+            # Deduct stock for each order item
+            for item in order.items.select_related('variant').all():
+                if item.variant:
+                    item.variant.stock -= item.quantity
+                    item.variant.save(update_fields=['stock'])
+
+            # Clear user's cart
+            try:
+                cart = Cart.objects.get(user=order.user)
+                cart.items.all().delete()
+            except Cart.DoesNotExist:
+                pass
+
+            # Apply coupon usage if a coupon was used and not already recorded
+            if order.coupon_code:
+                from products.models import Coupon
+                try:
+                    coupon = Coupon.objects.get(code__iexact=order.coupon_code)
+                    if not CouponUsage.objects.filter(coupon=coupon, order=order).exists():
+                        CouponUsage.objects.create(coupon=coupon, user=order.user, order=order)
+                        coupon.used_count += 1
+                        coupon.save(update_fields=['used_count'])
+                except Coupon.DoesNotExist:
+                    pass
+
         return redirect('orders:order_success', order_id=order.order_id)
 
     except Exception as e:
@@ -567,6 +556,9 @@ def razorpay_callback(request):
         print("Payment ID:", razorpay_payment_id)
         print("Signature:", razorpay_signature)
         print("Error:", str(e))
+        order.payment_status = 'failed'
+        order.save(update_fields=['payment_status', 'updated_at'])
+        return redirect('orders:payment_failed', order_id=order.order_id)
 @login_required
 def payment_failed(request, order_id):
     """Payment failure page with retry option."""
