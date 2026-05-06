@@ -10,7 +10,8 @@ def home(request):
             is_deleted=False,
             is_featured=True
         )
-        .prefetch_related('variants__images')
+        .select_related('brand', 'category')
+        .prefetch_related('variants__images', 'variants')
         .order_by('-created_at')[:3]
     )
 
