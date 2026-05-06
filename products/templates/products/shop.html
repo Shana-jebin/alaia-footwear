@@ -37,7 +37,7 @@
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.35-4.35" />
     </svg>
-    <input type="text" class="search-input" id="searchInput" placeholder="Search pieces…" value="{{ search_query }}">
+    <input type="text" class="search-input" id="searchInput" placeholder="Search pieces…" value="{{ search_query }}" autofocus onfocus="var val=this.value; this.value=''; this.value=val;">
     <button class="search-cancel {% if search_query %}visible{% endif %}" id="clearBtn">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path d="M18 6 6 18M6 6l12 12" />
@@ -509,10 +509,16 @@
           "X-CSRFToken": document.cookie.match(/csrftoken=([^;]+)/)[1]
         }
       })
-        .then(res => {
+        .then(async res => {
           if (res.redirected) {
             window.location.href = res.url;
             return;
+          }
+          if (!res.ok) {
+            const text = await res.text();
+            console.error("Server error:", text);
+            alert("Error updating wishlist. Please check the console.");
+            throw new Error("HTTP " + res.status);
           }
           return res.json();
         })
@@ -527,7 +533,8 @@
             path.style.fill = "none";
             path.style.stroke = "currentColor";
           }
-        });
+        })
+        .catch(e => console.error("Wishlist toggle error:", e));
     }
 
   })();

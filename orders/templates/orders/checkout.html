@@ -370,7 +370,14 @@ function applyCoupon() {
     },
     body: JSON.stringify({ code, subtotal: SUBTOTAL })
   })
-  .then(res => res.json())
+  .then(async res => {
+    if (!res.ok) {
+      const text = await res.text();
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return res.json();
+  })
   .then(d => {
     if (d.success) {
       appliedDiscount = d.discount;
@@ -378,10 +385,33 @@ function applyCoupon() {
       document.getElementById('appliedCouponCode').value = appliedCode;
       updateTotals();
       msg.textContent = d.message;
+      msg.style.color = 'var(--accent)';
     } else {
       msg.textContent = d.error;
+      msg.style.color = 'var(--red)';
     }
+  })
+  .catch(err => {
+    msg.textContent = err.message || 'Error applying coupon';
+    msg.style.color = 'var(--red)';
   });
+}
+
+function useCoupon(code) {
+  document.getElementById('couponInput').value = code;
+  applyCoupon();
+}
+
+function removeCoupon() {
+  appliedDiscount = 0;
+  appliedCode = '';
+  document.getElementById('appliedCouponCode').value = '';
+  document.getElementById('couponInput').value = '';
+  
+  const msg = document.getElementById('couponMsg');
+  msg.textContent = 'Coupon removed';
+  msg.style.color = 'var(--muted)';
+  updateTotals();
 }
 
 function updateTotals() {

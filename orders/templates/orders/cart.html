@@ -158,7 +158,14 @@ window.updateQty = function(itemId, action) {
       'X-Requested-With': 'XMLHttpRequest'
     }
   })
-  .then(res => res.json())
+  .then(async res => {
+    if (!res.ok) {
+      const text = await res.text();
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return res.json();
+  })
   .then(data => {
     if (data.success) {
       if (data.item_removed) {
@@ -180,7 +187,7 @@ window.updateQty = function(itemId, action) {
       showToast(data.error);
     }
   })
-  .catch(err => console.error(err));
+  .catch(err => { console.error(err); showToast(err.message || 'Error updating cart'); });
 }
 
 window.removeItem = function(itemId) {
@@ -194,7 +201,14 @@ window.removeItem = function(itemId) {
       'X-Requested-With': 'XMLHttpRequest'
     }
   })
-  .then(res => res.json())
+  .then(async res => {
+    if (!res.ok) {
+      const text = await res.text();
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return res.json();
+  })
   .then(data => {
     if (data.success) {
       if(el) el.remove();
@@ -205,8 +219,11 @@ window.removeItem = function(itemId) {
         document.getElementById('summary-total').textContent = '₹' + data.total.toLocaleString();
         document.querySelector('.cart-count').textContent = data.count + ' piece' + (data.count !== 1 ? 's' : '');
       }
+    } else if (data.error) {
+      showToast(data.error);
     }
-  });
+  })
+  .catch(err => { console.error(err); showToast(err.message || 'Error removing item'); });
 }
 
 function showToast(msg) {

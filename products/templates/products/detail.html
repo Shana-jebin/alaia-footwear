@@ -577,7 +577,15 @@
     // Find fetchVariant function and replace entirely
     function fetchVariant(variantId) {
       fetch(`/products/api/variant/${variantId}/`)
-        .then(r => r.json())
+        .then(async r => {
+          if (!r.ok) {
+            const text = await r.text();
+            console.error("Server error:", text);
+            showToast("Error fetching variant. Check console.", true);
+            throw new Error("HTTP " + r.status);
+          }
+          return r.json();
+        })
         .then(d => {
           const priceEl = document.getElementById('pdPrice');
           const origEl = document.getElementById('pdPriceOrig');
@@ -635,7 +643,7 @@
             mainImg.src = d.images[0].url;
           }
         })
-        .catch(console.error);
+        .catch(e => console.error("Variant fetch error:", e));
     }
 
     window.onColorChange = function (input) {
@@ -668,14 +676,21 @@
           "X-Requested-With": "XMLHttpRequest"
         }
       })
-        .then(res => {
+        .then(async res => {
           if (res.ok) {
             showToast("Added to your collection");
           } else {
-            showToast("Could not add to cart", true);
+            const text = await res.text();
+            console.error("Server error:", text);
+            try {
+              const err = JSON.parse(text);
+              showToast(err.message || err.error || "Could not add to cart", true);
+            } catch(e) {
+              showToast("Could not add to cart", true);
+            }
           }
         })
-        .catch(() => showToast("Something went wrong", true));
+        .catch(e => { console.error(e); showToast("Something went wrong", true); });
 
     };
 
@@ -690,7 +705,14 @@
           "X-Requested-With": "XMLHttpRequest"
         }
       })
-        .then(res => res.json())
+        .then(async res => {
+          if (!res.ok) {
+            const text = await res.text();
+            console.error("Server error:", text);
+            throw new Error("HTTP " + res.status);
+          }
+          return res.json();
+        })
         .then(data => {
 
           if (data.success) {
@@ -704,11 +726,11 @@
             }
 
           } else {
-            showToast("Could not update wishlist", true);
+            showToast(data.message || "Could not update wishlist", true);
           }
 
         })
-        .catch(() => showToast("Something went wrong", true));
+        .catch(e => { console.error(e); showToast("Something went wrong", true); });
 
     };
 
@@ -767,7 +789,15 @@
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF() },
         body: JSON.stringify({ rating: pickedRating, comment: text }),
       })
-        .then(r => r.json())
+        .then(async r => {
+          if (!r.ok) {
+            const text = await r.text();
+            console.error("Server error:", text);
+            try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+            catch(e) { throw new Error(e.message === "Server error" ? "Server error" : text); }
+          }
+          return r.json();
+        })
         .then(d => {
           if (d.success) {
             msg.textContent = d.message;
@@ -779,7 +809,11 @@
             msg.className = 'pd-form-msg error';
           }
         })
-        .catch(() => { msg.textContent = 'Something went wrong.'; msg.className = 'pd-form-msg error'; });
+        .catch(e => { 
+          console.error(e);
+          msg.textContent = e.message || 'Something went wrong.'; 
+          msg.className = 'pd-form-msg error'; 
+        });
     };
 
     /* ── TOAST ──────────────────────────────────────────────────────── */

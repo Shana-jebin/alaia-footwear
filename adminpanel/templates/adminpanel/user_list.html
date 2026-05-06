@@ -10,7 +10,7 @@
 {% block content %}
   <div class="search-filter-row">
     <form method="GET" id="searchForm" class="search-box">
-      <input type="text" name="q" id="searchInput" value="{{ query }}" placeholder="Search users..." />
+      <input type="text" name="q" id="searchInput" value="{{ query }}" placeholder="Search users..." autofocus onfocus="var val=this.value; this.value=''; this.value=val;" />
 
       {% if query %}
         <a href="{% url 'user_management' %}" class="clear-btn">✕</a>
@@ -166,20 +166,20 @@
     function closeModal() {
       document.getElementById('blockModal').style.display = 'none'
     }
-    const searchInput = document.getElementById('searchInput')
-    const searchForm = document.getElementById('searchForm')
+    const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
     
-    let typingTimer
-    const delay = 500
+    let typingTimer;
+    const delay = 400;
     
     if (searchInput) {
-      searchInput.addEventListener('keyup', function () {
-        clearTimeout(typingTimer)
+      searchInput.addEventListener('input', function () {
+        clearTimeout(typingTimer);
     
         typingTimer = setTimeout(() => {
-          searchForm.submit()
-        }, delay)
-      })
+          searchForm.submit();
+        }, delay);
+      });
     }
   </script>
 {% endblock %}

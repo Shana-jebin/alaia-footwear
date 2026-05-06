@@ -257,7 +257,15 @@ function confirmCancelOrder() {
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF() },
     body: JSON.stringify({ reason })
   })
-  .then(r => r.json())
+  .then(async r => {
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Server error:", text);
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return r.json();
+  })
   .then(d => {
     if (d.success) {
       msg.textContent = d.message; msg.className = 'modal-msg ok';
@@ -265,7 +273,8 @@ function confirmCancelOrder() {
     } else {
       msg.textContent = d.error; msg.className = 'modal-msg err';
     }
-  });
+  })
+  .catch(e => { msg.textContent = e.message || 'Network error'; msg.className = 'modal-msg err'; });
 }
 
 function confirmCancelItem() {
@@ -276,7 +285,15 @@ function confirmCancelItem() {
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF() },
     body: JSON.stringify({ reason })
   })
-  .then(r => r.json())
+  .then(async r => {
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Server error:", text);
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return r.json();
+  })
   .then(d => {
     if (d.success) {
       msg.textContent = d.message; msg.className = 'modal-msg ok';
@@ -284,7 +301,8 @@ function confirmCancelItem() {
     } else {
       msg.textContent = d.error; msg.className = 'modal-msg err';
     }
-  });
+  })
+  .catch(e => { msg.textContent = e.message || 'Network error'; msg.className = 'modal-msg err'; });
 }
 let pendingReturnItemId = null;
 
@@ -307,7 +325,15 @@ function confirmReturnItem() {
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF() },
     body: JSON.stringify({ reason })
   })
-  .then(r => r.json())
+  .then(async r => {
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Server error:", text);
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return r.json();
+  })
   .then(d => {
     if (d.success) {
       msg.textContent = d.message;
@@ -317,7 +343,8 @@ function confirmReturnItem() {
       msg.textContent = d.error;
       msg.className = 'modal-msg err';
     }
-  });
+  })
+  .catch(e => { msg.textContent = e.message || 'Network error'; msg.className = 'modal-msg err'; });
 }
 
 function confirmReturn() {
@@ -329,7 +356,15 @@ function confirmReturn() {
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF() },
     body: JSON.stringify({ reason })
   })
-  .then(r => r.json())
+  .then(async r => {
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Server error:", text);
+      try { const err = JSON.parse(text); throw new Error(err.error || err.message || "Server error"); } 
+      catch(e) { throw new Error(e.message === "Server error" ? "Server error" : "Server error occurred"); }
+    }
+    return r.json();
+  })
   .then(d => {
     if (d.success) {
       msg.textContent = d.message; msg.className = 'modal-msg ok';
@@ -337,7 +372,8 @@ function confirmReturn() {
     } else {
       msg.textContent = d.error; msg.className = 'modal-msg err';
     }
-  });
+  })
+  .catch(e => { msg.textContent = e.message || 'Network error'; msg.className = 'modal-msg err'; });
 }
 </script>
 {% endblock %}

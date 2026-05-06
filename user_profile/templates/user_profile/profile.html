@@ -168,12 +168,8 @@
               <input type="text"
                      class="form-input"
                      name="first_name"
-                     value="{{ request.user.first_name }}"
-                     required
-                     pattern="[A-Za-z\s]+"
-                     minlength="2"
-                     oninvalid="this.setCustomValidity('Please enter a valid first name (letters only).')"
-                     oninput="this.setCustomValidity('')" />
+                     id="firstNameInput"
+                     value="{{ request.user.first_name }}" />
             </div>
 
             <div class="form-group">
@@ -181,12 +177,8 @@
               <input type="text"
                      class="form-input"
                      name="last_name"
-                     value="{{ request.user.last_name }}"
-                     required
-                     pattern="[A-Za-z\s]+"
-                     minlength="1"
-                     oninvalid="this.setCustomValidity('Please enter a valid last name (letters only).')"
-                     oninput="this.setCustomValidity('')" />
+                     id="lastNameInput"
+                     value="{{ request.user.last_name }}" />
             </div>
 
             <div class="form-group">
@@ -194,9 +186,9 @@
               <input type="email"
                      class="form-input"
                      name="email"
+                     id="emailInput"
                      value="{{ request.user.email }}"
-                     {% if is_google_user %}readonly{% endif %}
-                     required />
+                     {% if is_google_user %}readonly{% endif %} />
               {% if is_google_user %}
                 <small style="color: var(--muted); font-size: 11px; letter-spacing: 0.5px;">
                   Email cannot be changed — linked via Google.
@@ -214,11 +206,9 @@
               </label>
               <input type="tel"
                      name="phone"
+                     id="phoneInput"
                      value="{{ request.user.profile.phone|default:'' }}"
-                     class="form-input"
-                     pattern="[0-9]{10}"
-                     oninvalid="this.setCustomValidity('Please enter exactly 10 digits.')"
-                     oninput="this.setCustomValidity('')" />
+                     class="form-input" />
             </div>
 
             <div class="action-buttons" style="grid-column: 1 / -1;">

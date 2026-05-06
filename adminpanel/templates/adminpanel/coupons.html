@@ -23,7 +23,7 @@
     <input type="text" name="q" id="searchInput"
            class="cp-search-input"
            value="{{ q }}" placeholder="Search coupon code…"
-           autocomplete="off"
+           autocomplete="off" autofocus onfocus="var val=this.value; this.value=''; this.value=val;"
            oninput="toggleClear(this)">
     <button type="button" class="cp-search-clear {% if q %}show{% endif %}"
             id="clearBtn" onclick="clearSearch()">✕</button>
@@ -285,9 +285,16 @@ function clearSearch() {
   document.getElementById('clearBtn').classList.remove('show');
   document.getElementById('searchForm').submit();
 }
+let couponTypingTimer;
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  toggleClear(this);
+  clearTimeout(couponTypingTimer);
+  couponTypingTimer = setTimeout(() => {
+    document.getElementById('searchForm').submit();
+  }, 400);
+});
 document.getElementById('searchInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') { e.preventDefault(); document.getElementById('searchForm').submit(); }
-  toggleClear(this);
 });
 
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
@@ -349,7 +356,15 @@ function toggleCoupon(pk, btn) {
   fetch(`/admin-panel/coupons/${pk}/toggle/`, {
     method: 'POST', headers: { 'X-CSRFToken': CSRF }
   })
-  .then(r => r.json())
+  .then(async r => {
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Server error:", text);
+      alert("Server error occurred. Please check the console.");
+      throw new Error("HTTP " + r.status);
+    }
+    return r.json();
+  })
   .then(d => {
     if (!d.success) return;
     btn.textContent = d.is_active ? 'ON' : 'OFF';
@@ -358,6 +373,10 @@ function toggleCoupon(pk, btn) {
     badge.className = 'cp-badge cp-' + d.status;
     badge.childNodes[0].nodeValue = '';
     badge.lastChild.nodeValue = d.status;
+  })
+  .catch(e => {
+    console.error("Toggle coupon failed:", e);
+    alert("Network or server error while toggling coupon.");
   });
 }
 
@@ -367,9 +386,22 @@ function openDelete(pk, code) {
     fetch(`/admin-panel/coupons/${pk}/delete/`, {
       method: 'POST', headers: { 'X-CSRFToken': CSRF }
     })
-    .then(r => r.json())
+    .then(async r => {
+      if (!r.ok) {
+        const text = await r.text();
+        console.error("Server error:", text);
+        alert("Server error occurred. Please check the console.");
+        throw new Error("HTTP " + r.status);
+      }
+      return r.json();
+    })
     .then(d => {
       if (d.success) { document.getElementById('row-' + pk)?.remove(); closeModal('delModal'); }
+    })
+    .catch(e => {
+      console.error("Delete coupon failed:", e);
+      alert("Network or server error while deleting coupon.");
+      closeModal('delModal');
     });
   };
   openModal('delModal');

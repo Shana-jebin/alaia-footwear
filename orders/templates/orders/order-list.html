@@ -28,6 +28,7 @@
         value="{{ q }}"
         placeholder="Search by order ID or product name…"
         autocomplete="off"
+        autofocus onfocus="var val=this.value; this.value=''; this.value=val;"
       >
       <button type="button" class="filter-input-clear" id="clearSearch" title="Clear">✕</button>
     </div>
@@ -106,7 +107,16 @@
   input.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') { e.preventDefault(); form.submit(); }
   });
-  input.addEventListener('input', toggleClear);
+
+  let orderTypingTimer;
+  input.addEventListener('input', function() {
+    toggleClear();
+    clearTimeout(orderTypingTimer);
+    orderTypingTimer = setTimeout(() => {
+      form.submit();
+    }, 400);
+  });
+
   clearBtn.addEventListener('click', function() {
     input.value = '';
     toggleClear();
