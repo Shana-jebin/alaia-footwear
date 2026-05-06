@@ -99,14 +99,18 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Helper functions for inline errors
             const clearErrors = () => {
-                ['firstNameError', 'lastNameError', 'emailError', 'phoneError'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) { el.style.display = 'none'; el.textContent = ''; }
+                ['firstName', 'lastName', 'email', 'phone'].forEach(prefix => {
+                    const errorEl = document.getElementById(prefix + 'Error');
+                    const inputEl = document.getElementById(prefix + 'Input');
+                    if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+                    if (inputEl) { inputEl.style.borderColor = ''; }
                 });
             };
-            const showError = (id, msg) => {
-                const el = document.getElementById(id);
-                if (el) { el.style.display = 'block'; el.textContent = msg; }
+            const showError = (prefix, msg) => {
+                const errorEl = document.getElementById(prefix + 'Error');
+                const inputEl = document.getElementById(prefix + 'Input');
+                if (errorEl) { errorEl.style.display = 'block'; errorEl.textContent = msg; }
+                if (inputEl) { inputEl.style.borderColor = 'var(--red)'; }
             };
             
             clearErrors();
@@ -115,31 +119,31 @@ document.addEventListener("DOMContentLoaded", function () {
             const nameRegex = /^[A-Za-z\s]+$/;
             
             if (!firstName) {
-                showError('firstNameError', "First name is required.");
+                showError('firstName', "First name is required.");
                 hasError = true;
             } else if (firstName.length < 2) {
-                showError('firstNameError', "First name must be at least 2 characters.");
+                showError('firstName', "First name must be at least 2 characters.");
                 hasError = true;
             } else if (!nameRegex.test(firstName)) {
-                showError('firstNameError', "First name can only contain letters.");
+                showError('firstName', "First name can only contain letters.");
                 hasError = true;
             }
             
             if (!lastName) {
-                showError('lastNameError', "Last name is required.");
+                showError('lastName', "Last name is required.");
                 hasError = true;
             } else if (!nameRegex.test(lastName)) {
-                showError('lastNameError', "Last name can only contain letters.");
+                showError('lastName', "Last name can only contain letters.");
                 hasError = true;
             }
             
             if (!email) {
-                showError('emailError', "Email address is required.");
+                showError('email', "Email address is required.");
                 hasError = true;
             } else {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
-                    showError('emailError', "Please enter a valid email address.");
+                    showError('email', "Please enter a valid email address.");
                     hasError = true;
                 }
             }
@@ -147,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (phone && phone !== "") {
                 const phoneRegex = /^[0-9]{10}$/;
                 if (!phoneRegex.test(phone)) {
-                    showError('phoneError', "Phone number must be exactly 10 digits.");
+                    showError('phone', "Phone number must be exactly 10 digits.");
                     hasError = true;
                 }
             }
