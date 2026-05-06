@@ -135,7 +135,7 @@
                 Phone Number
               </div>
               <div class="info-value" id="displayPhone">
-                {{ request.user.profile.phone|default:'Not added yet' }}
+                {% if request.user.profile.phone and request.user.profile.phone != 'None' %}{{ request.user.profile.phone }}{% else %}Not added yet{% endif %}
               </div>
             </div>
 
@@ -220,7 +220,7 @@
               <input type="tel"
                      name="phone"
                      id="phoneInput"
-                     value="{{ request.user.profile.phone|default:'' }}"
+                     value="{% if request.user.profile.phone and request.user.profile.phone != 'None' %}{{ request.user.profile.phone }}{% endif %}"
                      class="form-input" />
               <div class="field-error" id="phoneError" style="color: var(--red); font-size: 11px; margin-top: 4px; display: none;"></div>
             </div>

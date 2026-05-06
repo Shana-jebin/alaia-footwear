@@ -70,6 +70,9 @@ def profile_view(request):
         user.save()
 
         phone = request.POST.get("phone", "").strip()
+        if phone == "None":
+            phone = ""
+            
         if phone:
             if not phone.isdigit() or len(phone) != 10:
                 messages.error(request, "Phone number must be exactly 10 digits.")
