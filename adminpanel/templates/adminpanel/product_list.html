@@ -763,9 +763,13 @@ const text = await res.text();
 console.log("RAW RESPONSE:", text);
 
 if (!res.ok) {
-    const errText = await res.text();
-    console.log("SERVER ERROR:", errText);
-    showToast("Server error: " + errText, "error");
+    console.log("SERVER ERROR:", text);
+    try {
+        const errJson = JSON.parse(text);
+        showToast("Server error: " + (errJson.message || "Invalid request"), "error");
+    } catch(err) {
+        showToast("Server error: Check console for details.", "error");
+    }
     return;
 }
 
@@ -780,7 +784,8 @@ if (data.success) {
     showToast(JSON.stringify(data), 'error');
 }
     } catch (e) {
-        showToast('Network error. Please try again.', 'error');
+        console.error("Caught error in fetch:", e);
+        showToast('Network error or unexpected exception. Please check console.', 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = editingProductId ? 'Save Changes' : 'Add Product';
