@@ -1,292 +1,383 @@
+/* ================================================================
+   ALAIA — Refer & Earn Page  |  Full redesign
+   ================================================================ */
 
-  :root { --dark: #2a2520; --gold: #c9a96e; --muted: #888; --bg: #fdfcfa; }
-
-  body { background: var(--bg); }
-
-  .ref-wrap {
-    max-width: 680px;
-    margin: 0;
-    padding: 0;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  .ref-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 6px;
-  }
-
-  .ref-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 32px;
-  }
-
-  /* Hero card */
-  .ref-hero {
-    background: var(--dark);
-    border-radius: 16px;
-    padding: 36px 40px;
-    color: #fff;
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ref-hero::after {
-    content: '';
-    position: absolute;
-    right: -40px; top: -40px;
-    width: 200px; height: 200px;
-    background: rgba(201,169,110,.1);
-    border-radius: 50%;
-  }
-
-  .ref-hero-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    opacity: .6;
-    margin-bottom: 12px;
-  }
-
-  .ref-code-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .ref-code {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: #c9a96e;
-  }
-
-  .btn-copy {
-    padding: 8px 16px;
-    background: rgba(255,255,255,.1);
-    border: 1px solid rgba(255,255,255,.2);
-    border-radius: 8px;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: .5px;
-    transition: background .2s;
-  }
-
-  .btn-copy:hover { background: rgba(255,255,255,.2); }
-  .btn-copy.copied { background: #27ae60; border-color: #27ae60; }
-
-  .ref-stats {
-    display: flex;
-    gap: 32px;
-  }
-
-  .ref-stat-label {
-    font-size: 10px;
-    opacity: .5;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  .ref-stat-value {
-    font-size: 22px;
-    font-weight: 700;
-  }
-
-  /* Rewards info */
-  .ref-rewards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-
-  .ref-reward-card {
-    background: #fff;
-    border: 1px solid #ede8e0;
-    border-radius: 12px;
-    padding: 20px 24px;
-    text-align: center;
-  }
-
-  .ref-reward-amount {
-    font-size: 28px;
-    font-weight: 700;
-    color: #27ae60;
-    margin-bottom: 4px;
-  }
-
-  .ref-reward-label {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  /* Share link */
-  .ref-share {
-    background: #fff;
-    border: 1px solid #ede8e0;
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 24px;
-  }
-
-  .ref-share-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-  }
-
-  .ref-link-wrap {
-    display: flex;
-    gap: 8px;
-  }
-
-  .ref-link-input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--muted);
-    background: #fdfcfa;
-    outline: none;
-  }
-
-  .btn-copy-link {
-    padding: 10px 18px;
-    background: var(--dark);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  /* History */
-  .ref-section-title {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--dark);
-    margin-bottom: 12px;
-  }
-
-  .ref-history {
-    background: #fff;
-    border: 1px solid #ede8e0;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .ref-history-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 20px;
-    border-bottom: 1px solid #f5f0ea;
-  }
-
-  .ref-history-item:last-child { border-bottom: none; }
-
-  .ref-avatar {
-    width: 36px; height: 36px;
-    background: var(--dark);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-
-  .ref-history-info { flex: 1; }
-
-  .ref-history-email {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--dark);
-  }
-
-  .ref-history-date {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .ref-history-reward {
-    font-size: 13px;
-    font-weight: 700;
-    color: #27ae60;
-  }
-
-  .ref-empty {
-    text-align: center;
-    padding: 40px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-
-  .ref-how {
-    background: #fff;
-    border: 1px solid #ede8e0;
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 24px;
-  }
-
-  .ref-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 12px;
-  }
-
-  .ref-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  .btn-copy.copied,
-.btn-copy-link.copied {
-  background: #27ae60 !important;
-  border-color: #27ae60 !important;
-  color: #fff !important;
+:root {
+  --dark:   #2a2520;
+  --gold:   #c9a96e;
+  --cream:  #fdfcfa;
+  --muted:  #8a7f78;
+  --border: #ece8e1;
+  --green:  #27ae60;
 }
 
-  .ref-step-num {
-    width: 28px; height: 28px;
-    background: var(--dark);
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
+body { background: var(--cream); }
 
-  .ref-step-text {
-    font-size: 12px;
-    color: #555;
-    line-height: 1.6;
-  }
+/* ── WRAP ── */
+.ref-wrap {
+  width: 100%;
+  max-width: 740px;
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+}
 
-  .ref-step-text strong { color: var(--dark); }
+/* ── PAGE TITLE ── */
+.ref-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--dark);
+  margin-bottom: 6px;
+}
+
+.ref-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  letter-spacing: .2px;
+}
+
+/* ================================================================
+   HERO CARD — Referral Code
+   ================================================================ */
+.ref-hero {
+  background: linear-gradient(135deg, #2a2520 0%, #1a1512 60%, #2a2520 100%);
+  border-radius: 18px;
+  padding: 36px 40px;
+  color: #fff;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(42,37,32,.22);
+  width: 100%;
+}
+
+/* gold accent line */
+.ref-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent 70%);
+}
+
+/* decorative circle */
+.ref-hero::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(201,169,110,.14) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.ref-hero-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+  opacity: .9;
+  position: relative;
+  z-index: 1;
+}
+
+.ref-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.ref-code {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: var(--gold);
+}
+
+.btn-copy {
+  padding: 9px 20px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .5px;
+  transition: all .2s;
+  font-family: 'Montserrat', sans-serif;
+}
+.btn-copy:hover { background: rgba(255,255,255,.2); }
+.btn-copy.copied { background: var(--green); border-color: var(--green); }
+
+/* Stats row */
+.ref-stats {
+  display: flex;
+  gap: 40px;
+  position: relative;
+  z-index: 1;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.ref-stat-label {
+  font-size: 10px;
+  opacity: .5;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.ref-stat-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ================================================================
+   REWARD CARDS
+   ================================================================ */
+.ref-rewards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.ref-reward-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+
+.ref-reward-card:hover {
+  box-shadow: 0 6px 24px rgba(42,37,32,.08);
+  transform: translateY(-2px);
+}
+
+/* accent top line on reward cards */
+.ref-reward-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), rgba(201,169,110,.3));
+  border-radius: 16px 16px 0 0;
+}
+
+.ref-reward-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.ref-reward-label {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ================================================================
+   HOW IT WORKS
+   ================================================================ */
+.ref-how {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 26px 32px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.ref-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.ref-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ref-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ref-step-num {
+  width: 30px; height: 30px;
+  background: var(--dark);
+  color: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ref-step-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.7;
+  padding-top: 4px;
+}
+.ref-step-text strong { color: var(--dark); }
+
+/* ================================================================
+   SHARE LINK
+   ================================================================ */
+.ref-share {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.ref-share-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.ref-link-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.ref-link-input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  background: #f7f4f0;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.btn-copy-link {
+  padding: 11px 22px;
+  background: var(--dark);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: .5px;
+  transition: background .2s;
+}
+.btn-copy-link:hover { background: #3d3530; }
+.btn-copy-link.copied { background: var(--green); }
+
+/* ================================================================
+   REFERRAL HISTORY
+   ================================================================ */
+.ref-history {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.ref-history-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f5f0ea;
+  transition: background .15s;
+}
+.ref-history-item:hover { background: #fdfcfa; }
+.ref-history-item:last-child { border-bottom: none; }
+
+.ref-avatar {
+  width: 38px; height: 38px;
+  background: var(--dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ref-history-info { flex: 1; }
+
+.ref-history-email {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dark);
+  margin-bottom: 2px;
+}
+
+.ref-history-date {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ref-history-reward {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.ref-empty {
+  text-align: center;
+  padding: 44px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 2;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 600px) {
+  .ref-hero { padding: 26px 22px; }
+  .ref-code { font-size: 26px; letter-spacing: 3px; }
+  .ref-rewards { grid-template-columns: 1fr; }
+  .ref-how, .ref-share { padding: 22px 20px; }
+  .ref-link-wrap { flex-direction: column; }
+  .btn-copy-link { width: 100%; text-align: center; }
+}

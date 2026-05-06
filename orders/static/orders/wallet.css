@@ -1,61 +1,79 @@
 /* ================================================================
-   ALAIA — Wallet Page Styles
-   Place at: static/orders/wallet.css
+   ALAIA — Wallet Page  |  Full redesign
    ================================================================ */
+
+:root {
+  --dark:   #2a2520;
+  --gold:   #c9a96e;
+  --cream:  #fdfcfa;
+  --muted:  #8a7f78;
+  --border: #ece8e1;
+  --green:  #2d7a4f;
+  --red:    #c0392b;
+}
 
 /* ── WRAP ── */
 .wl-wrap {
-  font-family: 'Montserrat', sans-serif;
-  max-width: 680px;
+  width: 100%;
+  max-width: 740px;
   padding-bottom: 60px;
-  color: #2a2520;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--dark);
 }
 
 /* ── PAGE TITLE ── */
 .wl-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 500;
-  letter-spacing: 2px;
-  color: #2a2520;
-  margin-bottom: 26px;
+  letter-spacing: 1px;
+  color: var(--dark);
+  margin-bottom: 28px;
 }
 
-/* ── BALANCE CARD ── */
+/* ================================================================
+   BALANCE CARD
+   ================================================================ */
 .wl-balance-card {
-  background: #2a2520;
-  border-radius: 14px;
-  padding: 30px 34px;
+  background: linear-gradient(135deg, #2a2520 0%, #1a1512 60%, #2a2520 100%);
+  border-radius: 18px;
+  padding: 36px 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 40px rgba(42, 37, 32, 0.22);
+  width: 100%;
 }
 
+/* decorative circles */
 .wl-balance-card::before {
   content: '';
   position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle, rgba(201, 169, 110, 0.16) 0%, transparent 70%);
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(201,169,110,.18) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.wl-balance-card::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: 10px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(201,169,110,.07) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
 
-.wl-balance-card::after {
-  content: '';
+/* top gold accent line */
+.wl-balance-card .wl-accent-line {
   position: absolute;
-  bottom: -70px;
-  left: 20px;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(circle, rgba(201, 169, 110, 0.07) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent 70%);
 }
 
 .wl-balance-label {
@@ -63,28 +81,28 @@
   font-weight: 600;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: #c9a96e;
-  margin-bottom: 8px;
+  color: var(--gold);
+  margin-bottom: 10px;
   position: relative;
   z-index: 1;
 }
 
 .wl-balance-amount {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 50px;
+  font-size: 56px;
   font-weight: 600;
   color: #ffffff;
   line-height: 1;
   letter-spacing: -1px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   position: relative;
   z-index: 1;
 }
 
 .wl-balance-sub {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.42);
-  letter-spacing: 0.3px;
+  color: rgba(255,255,255,.38);
+  letter-spacing: .3px;
   position: relative;
   z-index: 1;
 }
@@ -92,70 +110,72 @@
 .wl-card-icon {
   position: relative;
   z-index: 1;
-  width: 54px;
-  height: 54px;
-  background: rgba(201, 169, 110, 0.12);
-  border: 1px solid rgba(201, 169, 110, 0.25);
-  border-radius: 12px;
+  width: 58px; height: 58px;
+  background: rgba(201,169,110,.12);
+  border: 1px solid rgba(201,169,110,.28);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-/* ── ADD MONEY WRAP ── */
+/* ================================================================
+   ADD MONEY SECTION
+   ================================================================ */
 .wl-add-wrap {
   background: #ffffff;
-  border: 1px solid #ece8e1;
-  border-radius: 14px;
-  padding: 26px 28px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 20px rgba(42, 37, 32, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 20px rgba(42,37,32,.05);
+  width: 100%;
 }
 
 .wl-add-title {
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 2.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8a7f78;
+  color: var(--muted);
   margin-bottom: 18px;
 }
 
-/* ── QUICK AMOUNT BUTTONS ── */
+/* Quick amount chips */
 .wl-quick-amounts {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .wl-quick-btn {
-  padding: 9px 18px;
+  padding: 9px 20px;
   background: #f7f4f0;
-  border: 1.5px solid #ece8e1;
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
   font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: #2a2520;
+  color: var(--dark);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
 }
 
 .wl-quick-btn:hover {
-  border-color: #c9a96e;
-  color: #c9a96e;
+  border-color: var(--gold);
+  color: var(--gold);
   background: #fffbf5;
 }
 
 .wl-quick-btn.active {
-  background: #2a2520;
-  border-color: #2a2520;
-  color: #c9a96e;
+  background: var(--dark);
+  border-color: var(--dark);
+  color: var(--gold);
 }
 
-/* ── ADD ROW ── */
+/* Input + Button row — ALWAYS side by side on desktop */
 .wl-add-row {
   display: flex;
   gap: 12px;
@@ -164,50 +184,51 @@
 
 .wl-add-input {
   flex: 1;
-  padding: 13px 16px;
-  border: 1.5px solid #ece8e1;
-  border-radius: 10px;
+  min-width: 0;
+  padding: 14px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
   font-family: 'Montserrat', sans-serif;
   font-size: 15px;
   font-weight: 500;
-  color: #2a2520;
+  color: var(--dark);
   background: #f7f4f0;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color .2s, background .2s;
   -moz-appearance: textfield;
 }
 
 .wl-add-input::-webkit-outer-spin-button,
-.wl-add-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-}
+.wl-add-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
 .wl-add-input:focus {
-  border-color: #c9a96e;
+  border-color: var(--gold);
   background: #ffffff;
 }
 
 .wl-add-btn {
-  padding: 13px 24px;
-  background: #2a2520;
+  padding: 14px 28px;
+  background: var(--dark);
   color: #ffffff;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background .2s, transform .15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .wl-add-btn:hover {
   background: #3d3530;
+  transform: translateY(-1px);
 }
 
-/* ── ADD MONEY MESSAGE ── */
+/* Messages */
 .wl-add-msg {
   margin-top: 12px;
   padding: 11px 14px;
@@ -216,90 +237,81 @@
   font-weight: 500;
   display: none;
 }
-
 .wl-add-msg.success {
   display: block;
   background: #edf7f2;
-  color: #2d7a4f;
+  color: var(--green);
   border: 1px solid #b8e0cc;
 }
-
 .wl-add-msg.error {
   display: block;
   background: #fdf0ee;
-  color: #c0392b;
+  color: var(--red);
   border: 1px solid #f5c6c0;
 }
 
-/* ── DJANGO FLASH MESSAGES ── */
-.wl-messages {
-  margin-bottom: 16px;
-}
-
+/* Django flash messages */
+.wl-messages { margin-bottom: 16px; }
 .wl-messages .wl-add-msg {
   display: block;
   margin-top: 0;
   margin-bottom: 10px;
 }
 
-/* ── SECTION TITLE ── */
+/* ================================================================
+   TRANSACTION HISTORY
+   ================================================================ */
 .wl-section-title {
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 2.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8a7f78;
+  color: var(--muted);
   margin-bottom: 0;
-  padding: 26px 28px 0;
+  padding: 22px 28px 0;
   background: #ffffff;
-  border: 1px solid #ece8e1;
+  border: 1px solid var(--border);
   border-bottom: none;
-  border-radius: 14px 14px 0 0;
-  box-shadow: 0 2px 20px rgba(42, 37, 32, 0.06);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 2px 20px rgba(42,37,32,.05);
+  width: 100%;
 }
 
-/* ── TRANSACTION LIST ── */
 .wl-tx-list {
   background: #ffffff;
-  border: 1px solid #ece8e1;
+  border: 1px solid var(--border);
   border-top: none;
-  border-radius: 0 0 14px 14px;
-  padding: 8px 28px 8px;
-  box-shadow: 0 2px 20px rgba(42, 37, 32, 0.06);
+  border-radius: 0 0 18px 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 20px rgba(42,37,32,.05);
+  width: 100%;
 }
 
 .wl-tx {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 0;
-  border-bottom: 1px solid #ece8e1;
+  padding: 16px 28px;
+  border-bottom: 1px solid #f5f0ea;
+  transition: background .15s;
 }
 
-.wl-tx:last-child {
-  border-bottom: none;
-}
+.wl-tx:hover { background: #fdfcfa; }
+.wl-tx:last-child { border-bottom: none; }
 
-/* ── TRANSACTION DOT / ICON ── */
+/* Icon dot */
 .wl-tx-dot {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 40px; height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
+.wl-tx-dot.credit { background: #edf7f2; }
+.wl-tx-dot.debit  { background: #fdf0ee; }
 
-.wl-tx-dot.credit {
-  background: #edf7f2;
-}
-
-.wl-tx-dot.debit {
-  background: #fdf0ee;
-}
-
-/* ── TRANSACTION INFO ── */
+/* Info */
 .wl-tx-info {
   flex: 1;
   min-width: 0;
@@ -308,8 +320,8 @@
 .wl-tx-desc {
   font-size: 13px;
   font-weight: 500;
-  color: #2a2520;
-  margin-bottom: 4px;
+  color: var(--dark);
+  margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -317,7 +329,7 @@
 
 .wl-tx-date {
   font-size: 11px;
-  color: #8a7f78;
+  color: var(--muted);
   display: block;
   margin-bottom: 2px;
 }
@@ -326,62 +338,42 @@
   display: inline-block;
   font-size: 10px;
   background: #f7f4f0;
-  border: 1px solid #ece8e1;
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px 7px;
-  color: #8a7f78;
+  color: var(--muted);
   margin-top: 2px;
 }
 
-/* ── TRANSACTION AMOUNT ── */
+/* Amount */
 .wl-tx-amount {
   font-family: 'Cormorant Garamond', serif;
   font-size: 20px;
   font-weight: 600;
-  letter-spacing: -0.3px;
+  letter-spacing: -.3px;
   flex-shrink: 0;
 }
+.wl-tx-amount.credit { color: var(--green); }
+.wl-tx-amount.debit  { color: var(--red); }
 
-.wl-tx-amount.credit {
-  color: #2d7a4f;
-}
-
-.wl-tx-amount.debit {
-  color: #c0392b;
-}
-
-/* ── EMPTY STATE ── */
+/* Empty state */
 .wl-empty {
   text-align: center;
-  padding: 40px 20px;
-  color: #8a7f78;
+  padding: 44px 20px;
+  color: var(--muted);
   font-size: 13px;
-  line-height: 1.9;
+  line-height: 2;
 }
 
-/* ── RESPONSIVE ── */
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
 @media (max-width: 600px) {
-  .wl-balance-card {
-    padding: 22px 20px;
-  }
-
-  .wl-balance-amount {
-    font-size: 38px;
-  }
-
-  .wl-add-wrap,
-  .wl-tx-list,
-  .wl-section-title {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .wl-add-row {
-    flex-direction: column;
-  }
-
-  .wl-add-btn {
-    width: 100%;
-    text-align: center;
-  }
-}
+  .wl-balance-card { padding: 24px 22px; }
+  .wl-balance-amount { font-size: 40px; }
+  .wl-add-wrap { padding: 22px 20px; }
+  .wl-add-row { flex-direction: column; }
+  .wl-add-btn { width: 100%; text-align: center; }
+  .wl-tx { padding: 14px 18px; }
+  .wl-section-title { padding: 18px 18px 0; }
+}
