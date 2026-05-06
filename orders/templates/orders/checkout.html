@@ -287,8 +287,10 @@
       <span id="grandTotal">₹{{ total|floatformat:0 }}</span>
     </div>
 
-   <button type="button" class="btn-place" id="placeOrderBtn"
+   <button type="submit" class="btn-place" id="placeBtn"
     {% if not addresses %}disabled{% endif %}>
+  Place Order
+</button>
 
     <div class="secure-note">
       <svg width="12" height="12" fill="none" stroke="currentColor"
