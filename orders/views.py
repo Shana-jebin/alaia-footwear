@@ -1144,8 +1144,9 @@ def update_cart_quantity(request, item_id, action):
         cart = Cart.objects.get(user=request.user)
         items = cart.items.all()
         subtotal = sum(item.subtotal() for item in items)
-        shipping = Decimal('0') if subtotal >= Decimal('2999') else Decimal('99')
-        total    = subtotal + shipping
+        subtotal_dec = Decimal(str(subtotal))
+        shipping = Decimal('0') if subtotal_dec >= Decimal('2999') else Decimal('99')
+        total    = subtotal_dec + shipping
         
         return JsonResponse({
             'success':  True,
