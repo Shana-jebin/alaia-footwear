@@ -52,6 +52,11 @@ function handleImageUpload(event) {
         setTimeout(() => {
             const form = document.getElementById("profileForm");
             if (form) {
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "image_upload_only";
+                hiddenInput.value = "true";
+                form.appendChild(hiddenInput);
                 form.submit();
             }
         }, 100);

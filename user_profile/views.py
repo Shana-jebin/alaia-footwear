@@ -31,6 +31,14 @@ def profile_view(request):
     if request.method == "POST":
 
         user = request.user
+        
+        # If this is just a profile photo upload, skip all text validation!
+        if request.POST.get("image_upload_only") == "true":
+            if request.FILES.get("image"):
+                profile.image = request.FILES.get("image")
+                profile.save()
+            return redirect("profile")
+
         user.first_name = request.POST.get("first_name", "").strip()
         user.last_name = request.POST.get("last_name", "").strip()
 
