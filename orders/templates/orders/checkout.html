@@ -287,7 +287,7 @@
       <span id="grandTotal">₹{{ total|floatformat:0 }}</span>
     </div>
 
-   <button type="submit" class="btn-place" id="placeBtn"
+   <button type="submit" form="checkoutForm" class="btn-place" id="placeBtn"
     {% if not addresses %}disabled{% endif %}>
   Place Order
 </button>
@@ -311,7 +311,7 @@
 <script>
 
 // ── Constants ─────────────────────────
-const CSRF       = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+const CSRF       = () => document.querySelector('[name=csrfmiddlewaretoken]')?.value || document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 const SUBTOTAL   = {{ subtotal }};
 const SHIPPING   = {{ shipping }};
 const WALLET_BAL = {{ wallet.balance|default:0 }};
@@ -457,8 +457,15 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
               "Content-Type": "application/json"
             },
             body: JSON.stringify(response)
-          }).then(() => {
-            window.location.href = data.success_url;
+          }).then(res => {
+            if (res.redirected) {
+              window.location.href = res.url;
+            } else {
+              window.location.href = data.success_url;
+            }
+          }).catch(err => {
+            console.error(err);
+            window.location.href = "/orders/";
           });
         }
       };

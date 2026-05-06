@@ -503,13 +503,26 @@ def razorpay_payment(request, order_id):
 @require_POST
 def razorpay_callback(request):
     print("=== RAZORPAY CALLBACK ===")
-    print("POST:", dict(request.POST))
-    razorpay_payment_id = request.POST.get('razorpay_payment_id', '')
-    razorpay_order_id   = request.POST.get('razorpay_order_id', '')
-    razorpay_signature  = request.POST.get('razorpay_signature', '')
+    
+    # Handle JSON payloads (from fetch in checkout.html)
+    if 'application/json' in request.content_type:
+        import json
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            data = {}
+    else:
+        # Handle Form Data (from razorpay_payment.html callback)
+        data = request.POST
+        
+    print("DATA:", data)
+    
+    razorpay_payment_id = data.get('razorpay_payment_id', '')
+    razorpay_order_id   = data.get('razorpay_order_id', '')
+    razorpay_signature  = data.get('razorpay_signature', '')
 
-    if request.POST.get('error[code]') or request.POST.get('error[description]'):
-        rz_order_id = request.POST.get('error[metadata][order_id]', '')
+    if data.get('error[code]') or data.get('error[description]'):
+        rz_order_id = data.get('error[metadata][order_id]', '')
         try:
             order = Order.objects.get(razorpay_order_id=rz_order_id)
             order.payment_status = 'failed'
