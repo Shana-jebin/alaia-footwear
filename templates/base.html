@@ -284,6 +284,93 @@
       }
     }
 
+    /* Modal Styles */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background: #2a2520;
+      border: 1px solid rgba(201, 184, 168, 0.2);
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 300px;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-backdrop.show .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-content h3 {
+      color: #c9b8a8;
+      font-weight: 500;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    .modal-content p {
+      color: #fdfcfa;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .modal-btn {
+      padding: 10px 24px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .cancel-btn {
+      background: transparent;
+      border: 1px solid #c9b8a8;
+      color: #c9b8a8;
+    }
+
+    .cancel-btn:hover {
+      background: rgba(201, 184, 168, 0.1);
+    }
+
+    .confirm-btn {
+      background: #c9b8a8;
+      border: 1px solid #c9b8a8;
+      color: #2a2520;
+    }
+
+    .confirm-btn:hover {
+      background: #b8a594;
+      border-color: #b8a594;
+    }
+
     @media (max-width: 768px) {
       nav {
         padding: 0 20px;
@@ -355,9 +442,9 @@
         <div class="account-dropdown" id="accountMenu">
           <a href="{% url 'profile' %}">My Profile</a>
 
-          <form method="post" action="{% url 'accounts:logout' %}">
+          <form method="post" action="{% url 'accounts:logout' %}" id="userLogoutForm">
             {% csrf_token %}
-            <button type="submit" class="logout-btn">Logout</button>
+            <button type="button" class="logout-btn" onclick="showLogoutModal()">Logout</button>
           </form>
         </div>
       </div>
@@ -447,6 +534,21 @@
       }
     })
 
+    function showLogoutModal() {
+      const modal = document.getElementById('logoutModal');
+      modal.style.display = 'flex';
+      modal.offsetHeight; // trigger reflow
+      modal.classList.add('show');
+    }
+
+    function hideLogoutModal() {
+      const modal = document.getElementById('logoutModal');
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    }
+
     function showToast(message) {
       const toast = document.getElementById("toast-message");
       toast.innerText = message;
@@ -485,6 +587,18 @@
 
   </script>
   {% endblock %}
+
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" class="modal-backdrop">
+    <div class="modal-content">
+      <h3>Sign Out</h3>
+      <p>Are you sure you want to sign out?</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel-btn" onclick="hideLogoutModal()">Cancel</button>
+        <button class="modal-btn confirm-btn" onclick="document.getElementById('userLogoutForm').submit()">Sign Out</button>
+      </div>
+    </div>
+  </div>
   <div id="toast-message" style="
 position:fixed;
 bottom:20px;

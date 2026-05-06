@@ -19,6 +19,82 @@
     {% block extra_css %}
 
     {% endblock %}
+
+    <style>
+      .admin-modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .admin-modal-backdrop.show {
+        display: flex;
+        opacity: 1;
+      }
+      .admin-modal-content {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 320px;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      }
+      .admin-modal-backdrop.show .admin-modal-content {
+        transform: scale(1);
+      }
+      .admin-modal-content h3 {
+        color: #fff;
+        font-size: 18px;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+      .admin-modal-content p {
+        color: #a0a0a0;
+        font-size: 14px;
+        margin-bottom: 25px;
+      }
+      .admin-modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+      .admin-modal-btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+      }
+      .admin-cancel-btn {
+        background: #2a2a2a;
+        color: #d4d4d4;
+        border: 1px solid #444;
+      }
+      .admin-cancel-btn:hover {
+        background: #3a3a3a;
+        color: #fff;
+      }
+      .admin-confirm-btn {
+        background: #ef4444;
+        color: #fff;
+      }
+      .admin-confirm-btn:hover {
+        background: #dc2626;
+      }
+    </style>
   </head>
 
   <body>
@@ -87,9 +163,9 @@ active{% endif %}">
         </nav>
 
         <div class="sign-out">
-          <form method="POST" action="{% url 'admin_logout' %}">
+          <form method="POST" action="{% url 'admin_logout' %}" id="adminLogoutForm">
             {% csrf_token %}
-            <button type="submit" class="sign-out-btn">
+            <button type="button" class="sign-out-btn" onclick="showAdminLogoutModal()">
               <span>→</span>
               <span>Sign Out</span>
             </button>
@@ -113,6 +189,18 @@ active{% endif %}">
       </main>
     </div>
 
+    <!-- Admin Logout Modal -->
+    <div id="adminLogoutModal" class="admin-modal-backdrop">
+      <div class="admin-modal-content">
+        <h3>Confirm Sign Out</h3>
+        <p>Are you sure you want to sign out of the admin panel?</p>
+        <div class="admin-modal-actions">
+          <button class="admin-modal-btn admin-cancel-btn" onclick="hideAdminLogoutModal()">Cancel</button>
+          <button class="admin-modal-btn admin-confirm-btn" onclick="document.getElementById('adminLogoutForm').submit()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
     {% block extra_js %}
       <script>
         setTimeout(function () {
@@ -123,6 +211,21 @@ active{% endif %}">
             setTimeout(() => alert.remove(), 500)
           })
         }, 3000)
+
+        function showAdminLogoutModal() {
+          const modal = document.getElementById('adminLogoutModal');
+          modal.style.display = 'flex';
+          modal.offsetHeight; // trigger reflow
+          modal.classList.add('show');
+        }
+
+        function hideAdminLogoutModal() {
+          const modal = document.getElementById('adminLogoutModal');
+          modal.classList.remove('show');
+          setTimeout(() => {
+            modal.style.display = 'none';
+          }, 300);
+        }
       </script>
     {% endblock %}
 
