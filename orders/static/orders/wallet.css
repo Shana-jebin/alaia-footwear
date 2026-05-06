@@ -360,7 +360,7 @@
 }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 500px) {
+@media (max-width: 600px) {
   .wl-balance-card {
     padding: 22px 20px;
   }
@@ -384,20 +384,4 @@
     width: 100%;
     text-align: center;
   }
-}
-
-.wl-tx-list,
-.wl-section-title {
-  padding-left: 18px;
-  padding-right: 18px;
-}
-
-.wl-add-row {
-  flex-direction: column;
-}
-
-.wl-add-btn {
-  width: 100%;
-  text-align: center;
-}
-}
+}
