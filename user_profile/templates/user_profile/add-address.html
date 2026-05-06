@@ -35,17 +35,13 @@
       <div class="form-group">
         <label for="fullName">Full Name</label>
         <input type="text" name="full_name" id="fullName"
-       value="{{ address.full_name|default:'' }}"
-       pattern="^[a-zA-Z\s]{3,50}$"
-       title="Full name should only contain letters and be between 3 and 50 characters."
-       required>
+               value="{{ address.full_name|default:'' }}">
       </div>
 
       <div class="form-group">
         <label for="addressLine1">Address Line 1</label>
         <input type="text" name="address_line1" id="addressLine1"
-       value="{{ address.address_line1|default:'' }}"
-       required>
+               value="{{ address.address_line1|default:'' }}">
       </div>
 
       <div class="form-group">
@@ -58,18 +54,13 @@
         <div class="form-group">
           <label for="city">City</label>
           <input type="text" name="city" id="city"
-       value="{{ address.city|default:'' }}"
-       pattern="^[a-zA-Z\s]+$"
-       title="City should only contain letters."
-       required>
+                 value="{{ address.city|default:'' }}">
         </div>
 
         <div class="form-group">
           <label for="state">State / Province</label>
           <input type="text" name="state" id="state"
-       value="{{ address.state|default:'' }}"
-       pattern="^[a-zA-Z\s]*$"
-       title="State should only contain letters.">
+                 value="{{ address.state|default:'' }}">
         </div>
       </div>
 
@@ -77,16 +68,13 @@
         <div class="form-group">
           <label for="postalCode">Postal Code</label>
           <input type="text" name="postal_code" id="postalCode"
-       value="{{ address.postal_code|default:'' }}"
-       pattern="^\d{6}$"
-       title="Postal code must be exactly 6 digits."
-       maxlength="6"
-       required>
+                 value="{{ address.postal_code|default:'' }}"
+                 maxlength="6">
         </div>
 
         <div class="form-group">
           <label for="country">Country</label>
-          <select name="country" id="country" required>
+          <select name="country" id="country">
             <option value="">Select Country</option>
             <option value="IN" {% if address.country == "IN" or address.country == "IT" %}selected{% endif %}>India</option>
             <option value="UK" {% if address.country == "UK" %}selected{% endif %}>United Kingdom</option>
@@ -105,11 +93,8 @@
       <div class="form-group">
         <label for="phone">Phone Number</label>
         <input type="tel" name="phone" id="phone"
-       value="{{ address.phone|default:'' }}"
-       pattern="^\d{10}$"
-       title="Phone number must be exactly 10 digits."
-       maxlength="10"
-       required>
+               value="{{ address.phone|default:'' }}"
+               maxlength="10">
       </div>
 
       <div class="checkbox-container">
@@ -126,16 +111,98 @@
       </div>
     </form>
   </main>
+  <!-- Notification -->
+  <div id="notification" class="notification">
+    <div class="notification-content">
+      <span id="notificationText"></span>
+    </div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{% static 'user_profile/profile.js' %}"></script>
   <script>
-    const cancelBtn = document.getElementById('cancelBtn')
+    const cancelBtn = document.getElementById('cancelBtn');
     
     cancelBtn.addEventListener('click', () => {
       if (confirm('Are you sure you want to cancel?')) {
-        window.location.href = "{% url 'address_list' %}"
+        window.location.href = "{% url 'address_list' %}";
       }
-    })
+    });
+
+    const addressForm = document.getElementById('addressForm');
+    if (addressForm) {
+      addressForm.addEventListener('submit', function(e) {
+        const fullName = document.getElementById('fullName').value.trim();
+        const addressLine1 = document.getElementById('addressLine1').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const postalCode = document.getElementById('postalCode').value.trim();
+        const country = document.getElementById('country').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+
+        if (!fullName) {
+          e.preventDefault();
+          showNotification('Full Name is required.', 'error');
+          return;
+        }
+        if (!/^[a-zA-Z\s]{3,50}$/.test(fullName)) {
+          e.preventDefault();
+          showNotification('Full name should only contain letters (3-50 chars).', 'error');
+          return;
+        }
+
+        if (!addressLine1) {
+          e.preventDefault();
+          showNotification('Address Line 1 is required.', 'error');
+          return;
+        }
+
+        if (!city) {
+          e.preventDefault();
+          showNotification('City is required.', 'error');
+          return;
+        }
+        if (!/^[a-zA-Z\s]+$/.test(city)) {
+          e.preventDefault();
+          showNotification('City should only contain letters.', 'error');
+          return;
+        }
+
+        if (state && !/^[a-zA-Z\s]*$/.test(state)) {
+          e.preventDefault();
+          showNotification('State should only contain letters.', 'error');
+          return;
+        }
+
+        if (!postalCode) {
+          e.preventDefault();
+          showNotification('Postal Code is required.', 'error');
+          return;
+        }
+        if (!/^\d{6}$/.test(postalCode)) {
+          e.preventDefault();
+          showNotification('Postal code must be exactly 6 digits.', 'error');
+          return;
+        }
+
+        if (!country) {
+          e.preventDefault();
+          showNotification('Country is required.', 'error');
+          return;
+        }
+
+        if (!phone) {
+          e.preventDefault();
+          showNotification('Phone number is required.', 'error');
+          return;
+        }
+        if (!/^\d{10}$/.test(phone)) {
+          e.preventDefault();
+          showNotification('Phone number must be exactly 10 digits.', 'error');
+          return;
+        }
+      });
+    }
   </script>
 {% endblock %}
