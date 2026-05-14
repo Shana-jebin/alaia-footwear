@@ -5,7 +5,8 @@ from accounts.models import Profile
 import random
 from django.core.mail import send_mail
 from accounts.models import EmailOTP
-from django.conf import settings 
+from django.conf import settings
+from core.email_utils import send_email_change_otp 
 from django.views.decorators.cache import never_cache, cache_control
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
@@ -144,12 +145,7 @@ def verify_email_otp(request):
 
         EmailOTP.objects.create(email=new_email, otp=otp)
 
-        send_mail(
-            'ALAIA Email Change Verification',
-            f'Your OTP is: {otp}',
-            settings.EMAIL_HOST_USER,
-            [new_email],
-        )
+        send_email_change_otp(new_email, otp)
         remaining_time = 60
 
     return render(request, 'user_profile/verify-email.html', {'remaining_time': remaining_time})
@@ -173,12 +169,7 @@ def resend_otp(request):
         otp=otp
     )
 
-    send_mail(
-        'ALAIA Email Change Verification',
-        f'Your new OTP is: {otp}',
-        settings.EMAIL_HOST_USER,
-        [new_email],
-    )
+    send_email_change_otp(new_email, otp)
 
     messages.success(request, "New OTP sent successfully ✔")
     return redirect('verify_email_otp')

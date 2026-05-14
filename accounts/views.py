@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 import random
 from .models import EmailOTP, Profile, ReferralCode, ReferralUsage
 from django.core.mail import send_mail
+from core.email_utils import send_signup_otp, send_signup_otp_resend, send_password_reset_otp
 from django.views.decorators.cache import never_cache, cache_control
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
@@ -141,12 +142,7 @@ def signup_view(request):
         EmailOTP.objects.filter(email=email).delete()
         EmailOTP.objects.create(email=email, otp=otp)
 
-        send_mail(
-            'ALAIA OTP Verification',
-            f'Your OTP is: {otp}',
-            settings.EMAIL_HOST_USER,
-            [email],
-        )
+        send_signup_otp(email, otp)
 
         request.session['signup_data'] = {
             'first_name':    first_name,
@@ -267,12 +263,7 @@ def resend_otp(request):
     otp = generate_otp()
     EmailOTP.objects.create(email=data['email'], otp=otp)
 
-    send_mail(
-        'ALAIA OTP Verification',
-        f'Your new OTP is: {otp}',
-        settings.EMAIL_HOST_USER,
-        [data['email']],
-    )
+    send_signup_otp_resend(data['email'], otp)
     messages.success(request, "New OTP sent successfully ✔")
     return redirect('accounts:verify_otp')
 
@@ -304,12 +295,7 @@ def forgot_password(request):
         EmailOTP.objects.filter(email=email).delete()
         EmailOTP.objects.create(email=email, otp=otp)
 
-        send_mail(
-            'Password Reset OTP - ALAIA',
-            f'Your OTP is: {otp}',
-            settings.EMAIL_HOST_USER,
-            [email],
-        )
+        send_password_reset_otp(email, otp)
         request.session['reset_email'] = email
         messages.success(request, "A verification code has been sent to your email.")
         return redirect('accounts:forgot-otp')
@@ -366,12 +352,7 @@ def resend_forgot_otp(request):
     EmailOTP.objects.filter(email=email).delete()
     EmailOTP.objects.create(email=email, otp=otp)
 
-    send_mail(
-        'New Password Reset OTP - ALAIA',
-        f'Your new OTP is: {otp}',
-        settings.EMAIL_HOST_USER,
-        [email],
-    )
+    send_password_reset_otp(email, otp)
     messages.success(request, "New OTP sent successfully.")
     return redirect('accounts:forgot-otp')
 

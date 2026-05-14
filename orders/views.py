@@ -600,6 +600,15 @@ def retry_payment(request, order_id):
 @login_required
 def order_success(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
+
+    # Safety net: ensure cart is cleared after a successful order
+    if order.payment_status == 'paid' or order.payment_method == 'cod':
+        try:
+            cart = Cart.objects.get(user=request.user)
+            cart.items.all().delete()
+        except Cart.DoesNotExist:
+            pass
+
     return render(request, 'orders/order-success.html', {'order': order})
 
 
