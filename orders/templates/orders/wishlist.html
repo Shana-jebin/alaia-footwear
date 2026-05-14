@@ -200,7 +200,8 @@ window.moveToCart = function(pid, btn) {
   .then(d => {
     if (d.success) {
       toast('Moved to cart ✓');
-      if (window.updateCartBadge) window.updateCartBadge(d.cart_count);
+      const cbadge = document.getElementById('cartBadge');
+      if (cbadge && d.cart_count !== undefined) cbadge.innerText = d.cart_count;
       const card = document.getElementById('wl-card-' + pid);
       if (card) {
         card.style.transition = 'opacity .3s, transform .3s';
@@ -225,6 +226,8 @@ window.moveToCart = function(pid, btn) {
 function setCount(n) {
   const el = document.getElementById('wlCount');
   if (el) el.textContent = n;
+  const wbadge = document.getElementById('wishlistBadge');
+  if (wbadge) wbadge.innerText = n;
 }
 
 function renderEmpty() {

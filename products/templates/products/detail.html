@@ -679,6 +679,11 @@
         .then(async res => {
           if (res.ok) {
             showToast("Added to your collection");
+            const data = await res.json();
+            if (data.count !== undefined) {
+              const badge = document.getElementById('cartBadge');
+              if (badge) badge.innerText = data.count;
+            }
           } else {
             const text = await res.text();
             console.error("Server error:", text);
@@ -723,6 +728,12 @@
             } else {
               btn.classList.remove("active");
               showToast("Removed from wishlist");
+            }
+
+            // Update navbar wishlist badge instantly
+            if (data.count !== undefined) {
+              const wbadge = document.getElementById('wishlistBadge');
+              if (wbadge) wbadge.innerText = data.count;
             }
 
           } else {

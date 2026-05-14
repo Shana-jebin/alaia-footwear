@@ -183,6 +183,8 @@ window.updateQty = function(itemId, action) {
       document.getElementById('summary-subtotal').textContent = '₹' + data.subtotal.toLocaleString();
       document.getElementById('summary-total').textContent = '₹' + data.total.toLocaleString();
       document.querySelector('.cart-count').textContent = data.count + ' piece' + (data.count !== 1 ? 's' : '');
+      const cbadge = document.getElementById('cartBadge');
+      if (cbadge && data.count !== undefined) cbadge.innerText = data.count;
     } else if (data.error) {
       showToast(data.error);
     }
@@ -218,6 +220,8 @@ window.removeItem = function(itemId) {
         document.getElementById('summary-subtotal').textContent = '₹' + data.subtotal.toLocaleString();
         document.getElementById('summary-total').textContent = '₹' + data.total.toLocaleString();
         document.querySelector('.cart-count').textContent = data.count + ' piece' + (data.count !== 1 ? 's' : '');
+        const cbadge = document.getElementById('cartBadge');
+        if (cbadge && data.count !== undefined) cbadge.innerText = data.count;
       }
     } else if (data.error) {
       showToast(data.error);

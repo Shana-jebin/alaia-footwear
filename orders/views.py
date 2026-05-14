@@ -1102,7 +1102,7 @@ def add_to_cart(request, variant_id):
         wishlist__user=request.user, product=variant.product
     ).delete()
 
-    return JsonResponse({"success": True})
+    return JsonResponse({"success": True, "count": cart.items.count()})
 
 
 def cart_view(request):
