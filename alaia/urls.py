@@ -4,7 +4,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import logout_view
-from django.views.defaults import page_not_found
 
 handler404 = 'alaia.views.custom_404'
 

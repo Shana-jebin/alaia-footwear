@@ -388,8 +388,15 @@ def place_order(request):
 
     for item in valid_items:
         v   = item.variant
+        # Try this variant's image first, then any other variant image for the same product
         img = v.images.first()
-        image_url = img.image.url if (img and img.image) else ''
+        if img and img.image:
+            image_url = img.image.url
+        else:
+            fallback = v.product.variants.exclude(pk=v.pk).filter(images__isnull=False).first()
+            fallback_img = fallback.images.first() if fallback else None
+            image_url = fallback_img.image.url if (fallback_img and fallback_img.image) else ''
+
         OrderItem.objects.create(
             order=order,
             variant=v,
