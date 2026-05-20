@@ -323,7 +323,7 @@ def admin_category_list(request):
         return redirect('admin_category_list')
 
  
-    categories = Category.objects.filter(is_deleted=False)
+    categories = Category.objects.all()
 
     if query:
         categories = categories.filter(name__icontains=query)
@@ -386,6 +386,7 @@ def admin_category_delete(request, category_id):
 
     if request.method == "POST":
         category.is_deleted = True  
+        category.is_active = False
         category.save()
 
         messages.success(request, "Category deleted successfully!")
@@ -435,10 +436,7 @@ def product_list(request):
     paginator = Paginator(products, per_page)
     products_page = paginator.get_page(page_number)
 
-    categories = Category.objects.filter(
-    is_deleted=False,
-    is_active=True
-)
+    categories = Category.objects.all()
     brands = Brand.objects.all()
 
     context = {
