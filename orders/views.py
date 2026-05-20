@@ -860,38 +860,47 @@ def cancel_item(request, order_id, item_id):
     item.cancelled_at  = timezone.now()
     item.save()
 
-    if not order.items.filter(status='active').exists():
-        order.status = 'cancelled'
-        order.save(update_fields=['status', 'updated_at'])
-
-    active_items = order.items.filter(status='active')
+    # Calculate what was owed BEFORE this cancellation
+    active_before = list(order.items.filter(status__in=['active', 'cancelled']))
+    # Wait, the item itself just got its status set to 'cancelled' on line 861!
+    # So we must compute the 'old' values by treating this item as active.
+    active_now = order.items.filter(status='active')
     
-    if not active_items.exists():
+    old_subtotal = sum(i.unit_price * i.quantity for i in active_now) + (item.unit_price * item.quantity)
+    old_shipping = Decimal('0') if old_subtotal >= Decimal('2999') else Decimal('99')
+    old_total    = old_subtotal + old_shipping - order.discount
+    
+    if not active_now.exists():
+        actual_new_total = Decimal('0')
+        order.status = 'cancelled'
+        # Restore original amounts for history
         all_items = order.items.all()
         new_subtotal = sum(i.unit_price * i.quantity for i in all_items)
         new_shipping = Decimal('0') if new_subtotal >= Decimal('2999') else Decimal('99')
         new_discount = order.discount
         new_total    = new_subtotal + new_shipping - new_discount
     else:
-        new_subtotal = sum(i.unit_price * i.quantity for i in active_items)
+        new_subtotal = sum(i.unit_price * i.quantity for i in active_now)
         new_discount = order.discount
         new_shipping = Decimal('0') if new_subtotal >= Decimal('2999') else Decimal('99')
         new_total    = new_subtotal + new_shipping - new_discount
+        actual_new_total = new_total
 
     order.subtotal = new_subtotal
     order.shipping = new_shipping
     order.total    = new_total
-    order.save(update_fields=['subtotal', 'shipping', 'total', 'updated_at'])
+    order.save(update_fields=['status', 'subtotal', 'shipping', 'total', 'updated_at'])
 
     refund_amount = 0
     if order.payment_method in ('online', 'wallet'):
-        refund_amount = float(item.unit_price * item.quantity)
-        wallet = _get_wallet(request.user)
-        wallet.credit(
-            refund_amount,
-            description=f"Refund for cancelled item '{item.product_name}' in order {order.order_id}",
-            order=order,
-        )
+        refund_amount = float(old_total - actual_new_total)
+        if refund_amount > 0:
+            wallet = _get_wallet(request.user)
+            wallet.credit(
+                refund_amount,
+                description=f"Refund for cancelled item '{item.product_name}' in order {order.order_id}",
+                order=order,
+            )
 
     return JsonResponse({
         'success':       True,
