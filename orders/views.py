@@ -478,27 +478,70 @@ def razorpay_payment(request, order_id):
 @csrf_exempt
 @require_POST
 def razorpay_callback(request):
-    print("=== RAZORPAY CALLBACK ===")
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("=== RAZORPAY CALLBACK ===")
 
-    # Handle Form Data (from razorpay_payment.html embedded checkout callback)
     data = request.POST
-    print("DATA:", data)
+    logger.info("CALLBACK DATA: %s", dict(data))
 
     razorpay_payment_id = data.get('razorpay_payment_id', '')
     razorpay_order_id   = data.get('razorpay_order_id', '')
     razorpay_signature  = data.get('razorpay_signature', '')
 
-    # Payment failed / cancelled by Razorpay
+    # ── Helper: find the order from any available field ──
+    def _find_order_from_error():
+        """Try every possible field Razorpay might send on error."""
+        # 1. error[metadata][order_id]  — most common
+        rz_oid = data.get('error[metadata][order_id]', '')
+        if rz_oid:
+            try:
+                return Order.objects.get(razorpay_order_id=rz_oid)
+            except Order.DoesNotExist:
+                pass
+
+        # 2. Top-level razorpay_order_id (some failure modes still send it)
+        if razorpay_order_id:
+            try:
+                return Order.objects.get(razorpay_order_id=razorpay_order_id)
+            except Order.DoesNotExist:
+                pass
+
+        # 3. error[metadata][payment_id] — fetch order via Razorpay API
+        rz_pid = data.get('error[metadata][payment_id]', '')
+        if rz_pid:
+            try:
+                import razorpay
+                client = razorpay.Client(
+                    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+                )
+                payment = client.payment.fetch(rz_pid)
+                rz_oid = payment.get('order_id', '')
+                if rz_oid:
+                    return Order.objects.get(razorpay_order_id=rz_oid)
+            except Exception:
+                pass
+
+        return None
+
+    # ── Payment failed / cancelled by Razorpay ──
     if data.get('error[code]') or data.get('error[description]'):
-        rz_order_id = data.get('error[metadata][order_id]', '')
-        try:
-            order = Order.objects.get(razorpay_order_id=rz_order_id)
+        error_desc = data.get('error[description]', 'Payment failed')
+        logger.warning("Razorpay error callback: %s", error_desc)
+
+        order = _find_order_from_error()
+        if order:
             order.payment_status = 'failed'
             order.save(update_fields=['payment_status', 'updated_at'])
+            from django.contrib import messages as msg_framework
+            msg_framework.error(request, f'Payment failed: {error_desc}')
             return redirect('orders:payment_failed', order_id=order.order_id)
-        except Exception:
-            return redirect('orders:order_list')
 
+        # Could not find the order at all — go to order list
+        logger.error("Razorpay error callback: could not find order. Data: %s", dict(data))
+        return redirect('orders:order_list')
+
+    # ── No order ID at all ──
     if not razorpay_order_id:
         return redirect('orders:order_list')
 
@@ -507,11 +550,13 @@ def razorpay_callback(request):
     except Order.DoesNotExist:
         return redirect('orders:order_list')
 
+    # ── Missing payment ID or signature ──
     if not razorpay_payment_id or not razorpay_signature:
         order.payment_status = 'failed'
         order.save(update_fields=['payment_status', 'updated_at'])
         return redirect('orders:payment_failed', order_id=order.order_id)
 
+    # ── Verify signature and complete the order ──
     try:
         import razorpay
         client = razorpay.Client(
@@ -558,11 +603,7 @@ def razorpay_callback(request):
         return redirect('orders:order_success', order_id=order.order_id)
 
     except Exception as e:
-        print("=== SIGNATURE ERROR ===")
-        print("Order ID:", razorpay_order_id)
-        print("Payment ID:", razorpay_payment_id)
-        print("Signature:", razorpay_signature)
-        print("Error:", str(e))
+        logger.error("Razorpay signature verification failed: %s", str(e))
         order.payment_status = 'failed'
         order.save(update_fields=['payment_status', 'updated_at'])
         return redirect('orders:payment_failed', order_id=order.order_id)

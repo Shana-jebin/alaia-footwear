@@ -172,18 +172,23 @@ document.addEventListener('DOMContentLoaded', function() {
   form.method = 'POST';
   form.action = 'https://api.razorpay.com/v1/checkout/embedded';
 
+  // Build absolute URLs using the current origin so they work on any host
+  const origin = window.location.origin;
+  const callbackUrl = origin + "{% url 'orders:razorpay_callback' %}";
+  const cancelUrl   = origin + "{% url 'orders:payment_failed' order_id=order.order_id %}";
+
   const fields = {
-    key_id:               '{{ RAZORPAY_KEY_ID }}',
-    order_id:             '{{ razorpay_order_id }}',
-    name:                 'ALAIA',
-    description:          'Order #{{ order.order_id }}',
-    amount:               '{{ amount_paise }}',
-    currency:             'INR',
+    'key_id':             '{{ RAZORPAY_KEY_ID }}',
+    'order_id':           '{{ razorpay_order_id }}',
+    'name':               'ALAIA',
+    'description':        'Order #{{ order.order_id }}',
+    'amount':             '{{ amount_paise }}',
+    'currency':           'INR',
     'prefill[name]':      '{{ order.full_name|escapejs }}',
     'prefill[email]':     '{{ order.user.email|escapejs }}',
     'prefill[contact]':   '{{ order.phone|default:"9999999999"|escapejs }}',
-    callback_url:         window.location.origin + "{% url 'orders:razorpay_callback' %}",
-    cancel_url:           window.location.origin + "/orders/payment-failed/{{ order.order_id }}/",
+    'callback_url':       callbackUrl,
+    'cancel_url':         cancelUrl,
   };
 
   for (const [key, val] of Object.entries(fields)) {

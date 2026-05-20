@@ -138,18 +138,24 @@ document.addEventListener("DOMContentLoaded", function() {
   form.method = 'POST';
   form.action = 'https://api.razorpay.com/v1/checkout/embedded';
 
+  // callback_url  → handles success AND error POST from Razorpay
+  // cancel_url    → user clicks "Back" / closes modal — send them back to wallet page
+  const origin      = window.location.origin;
+  const callbackUrl = '{{ callback_url }}';
+  const cancelUrl   = origin + "{% url 'orders:wallet' %}";
+
   const fields = {
-    key_id:          '{{ RAZORPAY_KEY_ID }}',
-    order_id:        '{{ razorpay_order_id }}',
-    name:            'ALAIA',
-    description:     'Wallet Top-up',
-    amount:          '{{ amount_paise }}',
-    currency:        'INR',
-    'prefill[name]': '{{ request.user.get_full_name|escapejs }}',
-    'prefill[email]': '{{ request.user.email|escapejs }}',
-    'prefill[contact]': '9999999999',
-    callback_url:    '{{ callback_url }}',  
-    cancel_url:      '{{ callback_url }}',  
+    'key_id':              '{{ RAZORPAY_KEY_ID }}',
+    'order_id':            '{{ razorpay_order_id }}',
+    'name':                'ALAIA',
+    'description':         'Wallet Top-up',
+    'amount':              '{{ amount_paise }}',
+    'currency':            'INR',
+    'prefill[name]':       '{{ request.user.get_full_name|escapejs }}',
+    'prefill[email]':      '{{ request.user.email|escapejs }}',
+    'prefill[contact]':    '{{ request.user.userprofile.phone|default:"9999999999"|escapejs }}',
+    'callback_url':        callbackUrl,
+    'cancel_url':          cancelUrl,
   };
 
   for (const [key, val] of Object.entries(fields)) {
