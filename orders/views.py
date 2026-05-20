@@ -870,7 +870,12 @@ def cancel_item(request, order_id, item_id):
     active_items = order.items.filter(status='active')
     new_subtotal = sum(i.unit_price * i.quantity for i in active_items)
     new_discount = order.discount if active_items.exists() else Decimal('0')
-    new_shipping = Decimal('0') if new_subtotal >= Decimal('2999') else Decimal('99')
+    
+    if active_items.exists():
+        new_shipping = Decimal('0') if new_subtotal >= Decimal('2999') else Decimal('99')
+    else:
+        new_shipping = Decimal('0')
+        
     new_total    = new_subtotal + new_shipping - new_discount
 
     order.subtotal = new_subtotal
