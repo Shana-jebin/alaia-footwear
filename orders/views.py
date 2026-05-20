@@ -525,7 +525,19 @@ def razorpay_callback(request):
     # ── Helper: find the order from any available field ──
     def _find_order_from_error():
         """Try every possible field Razorpay might send on error."""
-        # 1. error[metadata][order_id]  — most common
+        # 1. Parse error[metadata] as a JSON string if present (Razorpay sends it as a JSON string)
+        rz_metadata_str = data.get('error[metadata]', '')
+        if rz_metadata_str:
+            try:
+                import json
+                metadata = json.loads(rz_metadata_str)
+                rz_oid = metadata.get('order_id', '')
+                if rz_oid:
+                    return Order.objects.get(razorpay_order_id=rz_oid)
+            except Exception:
+                pass
+
+        # 2. error[metadata][order_id]  — fallback
         rz_oid = data.get('error[metadata][order_id]', '')
         if rz_oid:
             try:
@@ -533,15 +545,22 @@ def razorpay_callback(request):
             except Order.DoesNotExist:
                 pass
 
-        # 2. Top-level razorpay_order_id (some failure modes still send it)
+        # 3. Top-level razorpay_order_id (some failure modes still send it)
         if razorpay_order_id:
             try:
                 return Order.objects.get(razorpay_order_id=razorpay_order_id)
             except Order.DoesNotExist:
                 pass
 
-        # 3. error[metadata][payment_id] — fetch order via Razorpay API
+        # 4. error[metadata][payment_id] — fetch order via Razorpay API
         rz_pid = data.get('error[metadata][payment_id]', '')
+        if not rz_pid and rz_metadata_str:
+            try:
+                import json
+                metadata = json.loads(rz_metadata_str)
+                rz_pid = metadata.get('payment_id', '')
+            except Exception:
+                pass
         if rz_pid:
             try:
                 import razorpay
