@@ -755,7 +755,11 @@ def order_success(request, order_id):
 
 @login_required
 def order_list(request):
-    orders = Order.objects.filter(user=request.user)
+    # Hide online orders that are still pending or failed to keep history clean
+    orders = Order.objects.filter(user=request.user).exclude(
+        payment_method='online',
+        payment_status__in=['pending', 'failed']
+    )
     q = request.GET.get('q', '').strip()
     if q:
         orders = orders.filter(
