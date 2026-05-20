@@ -813,12 +813,9 @@ def cancel_order(request, order_id):
 
     # Cancel order
     order.status   = 'cancelled'
-    order.subtotal = Decimal('0')
-    order.shipping = Decimal('0')
-    order.total    = Decimal('0')
     if refund_amount > 0:
         order.payment_status = 'refunded'
-    order.save(update_fields=['status', 'subtotal', 'shipping', 'total', 'payment_status', 'updated_at'])
+    order.save(update_fields=['status', 'payment_status', 'updated_at'])
 
    
     if refund_amount > 0:
@@ -868,15 +865,18 @@ def cancel_item(request, order_id, item_id):
         order.save(update_fields=['status', 'updated_at'])
 
     active_items = order.items.filter(status='active')
-    new_subtotal = sum(i.unit_price * i.quantity for i in active_items)
-    new_discount = order.discount if active_items.exists() else Decimal('0')
     
-    if active_items.exists():
+    if not active_items.exists():
+        all_items = order.items.all()
+        new_subtotal = sum(i.unit_price * i.quantity for i in all_items)
         new_shipping = Decimal('0') if new_subtotal >= Decimal('2999') else Decimal('99')
+        new_discount = order.discount
+        new_total    = new_subtotal + new_shipping - new_discount
     else:
-        new_shipping = Decimal('0')
-        
-    new_total    = new_subtotal + new_shipping - new_discount
+        new_subtotal = sum(i.unit_price * i.quantity for i in active_items)
+        new_discount = order.discount
+        new_shipping = Decimal('0') if new_subtotal >= Decimal('2999') else Decimal('99')
+        new_total    = new_subtotal + new_shipping - new_discount
 
     order.subtotal = new_subtotal
     order.shipping = new_shipping
