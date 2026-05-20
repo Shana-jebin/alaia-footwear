@@ -135,6 +135,22 @@ def wallet_razorpay_callback(request):
   
     if request.POST.get('error[code]') or not razorpay_payment_id:
         messages.error(request, 'Wallet top-up payment failed. Please try again.')
+        user_id = None
+        if razorpay_order_id:
+            try:
+                import razorpay
+                client = razorpay.Client(
+                    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+                )
+                rz_order = client.order.fetch(razorpay_order_id)
+                notes = rz_order.get('notes') or {}
+                user_id = notes.get('user_id')
+            except Exception:
+                pass
+        if user_id:
+            from django.core import signing
+            token = signing.dumps({'wallet_topup': False, 'user_id': user_id})
+            return redirect(f"{reverse('orders:wallet')}?token={token}")
         return redirect('orders:wallet')
 
     try:
@@ -149,8 +165,23 @@ def wallet_razorpay_callback(request):
         })
     except Exception:
         messages.error(request, 'Payment verification failed. Contact support.')
+        user_id = None
+        if razorpay_order_id:
+            try:
+                import razorpay
+                client = razorpay.Client(
+                    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+                )
+                rz_order = client.order.fetch(razorpay_order_id)
+                notes = rz_order.get('notes') or {}
+                user_id = notes.get('user_id')
+            except Exception:
+                pass
+        if user_id:
+            from django.core import signing
+            token = signing.dumps({'wallet_topup': False, 'user_id': user_id})
+            return redirect(f"{reverse('orders:wallet')}?token={token}")
         return redirect('orders:wallet')
-
 
     client = razorpay.Client(
         auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
@@ -179,7 +210,9 @@ def wallet_razorpay_callback(request):
         description=f"Wallet top-up via Razorpay ({razorpay_payment_id})",
     )
     messages.success(request, f'₹{amount:.0f} added to your wallet successfully!')
-    return redirect('orders:wallet')
+    from django.core import signing
+    token = signing.dumps({'wallet_topup': True, 'user_id': user.id})
+    return redirect(f"{reverse('orders:wallet')}?token={token}")
 
 @login_required
 def checkout(request):
@@ -535,7 +568,9 @@ def razorpay_callback(request):
             order.save(update_fields=['payment_status', 'updated_at'])
             from django.contrib import messages as msg_framework
             msg_framework.error(request, f'Payment failed: {error_desc}')
-            return redirect('orders:payment_failed', order_id=order.order_id)
+            from django.core import signing
+            token = signing.dumps({'order_id': order.order_id, 'user_id': order.user.id})
+            return redirect(f"{reverse('orders:payment_failed', kwargs={'order_id': order.order_id})}?token={token}")
 
         # Could not find the order at all — go to order list
         logger.error("Razorpay error callback: could not find order. Data: %s", dict(data))
@@ -554,7 +589,9 @@ def razorpay_callback(request):
     if not razorpay_payment_id or not razorpay_signature:
         order.payment_status = 'failed'
         order.save(update_fields=['payment_status', 'updated_at'])
-        return redirect('orders:payment_failed', order_id=order.order_id)
+        from django.core import signing
+        token = signing.dumps({'order_id': order.order_id, 'user_id': order.user.id})
+        return redirect(f"{reverse('orders:payment_failed', kwargs={'order_id': order.order_id})}?token={token}")
 
     # ── Verify signature and complete the order ──
     try:
@@ -600,16 +637,36 @@ def razorpay_callback(request):
                 except Coupon.DoesNotExist:
                     pass
 
-        return redirect('orders:order_success', order_id=order.order_id)
+        from django.core import signing
+        token = signing.dumps({'order_id': order.order_id, 'user_id': order.user.id})
+        return redirect(f"{reverse('orders:order_success', kwargs={'order_id': order.order_id})}?token={token}")
 
     except Exception as e:
         logger.error("Razorpay signature verification failed: %s", str(e))
         order.payment_status = 'failed'
         order.save(update_fields=['payment_status', 'updated_at'])
-        return redirect('orders:payment_failed', order_id=order.order_id)
-@login_required
+        from django.core import signing
+        token = signing.dumps({'order_id': order.order_id, 'user_id': order.user.id})
+        return redirect(f"{reverse('orders:payment_failed', kwargs={'order_id': order.order_id})}?token={token}")
+
 def payment_failed(request, order_id):
     """Payment failure page with retry option."""
+    token = request.GET.get('token')
+    if token:
+        from django.core import signing
+        try:
+            data = signing.loads(token, max_age=300)
+            if data.get('order_id') == order_id:
+                from django.contrib.auth import login
+                from django.contrib.auth.models import User
+                user = User.objects.get(id=data['user_id'])
+                login(request, user)
+        except Exception:
+            pass
+
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('account_login')}?next={request.path}")
+
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     return render(request, 'orders/payment_failed.html', {'order': order})
 
@@ -645,8 +702,23 @@ def retry_payment(request, order_id):
 
 
 
-@login_required
 def order_success(request, order_id):
+    token = request.GET.get('token')
+    if token:
+        from django.core import signing
+        try:
+            data = signing.loads(token, max_age=300)
+            if data.get('order_id') == order_id:
+                from django.contrib.auth import login
+                from django.contrib.auth.models import User
+                user = User.objects.get(id=data['user_id'])
+                login(request, user)
+        except Exception:
+            pass
+
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('account_login')}?next={request.path}")
+
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
     # Safety net: ensure cart is cleared after a successful order
@@ -866,8 +938,23 @@ def return_item(request, order_id, item_id):
 
 from django.core.paginator import Paginator
 
-@login_required
 def wallet_page(request):
+    token = request.GET.get('token')
+    if token:
+        from django.core import signing
+        try:
+            data = signing.loads(token, max_age=300)
+            if 'wallet_topup' in data:
+                from django.contrib.auth import login
+                from django.contrib.auth.models import User
+                user = User.objects.get(id=data['user_id'])
+                login(request, user)
+        except Exception:
+            pass
+
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('account_login')}?next={request.path}")
+
     wallet       = _get_wallet(request.user)
     transaction_list = wallet.transactions.select_related('order').all()
     
