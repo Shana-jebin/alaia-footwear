@@ -950,6 +950,11 @@ def admin_order_status(request, order_id):
                 item.variant.save(update_fields=['stock'])
             item.status = 'cancelled'
             item.save()
+            
+        order.subtotal = Decimal('0')
+        order.shipping = Decimal('0')
+        order.total = Decimal('0')
+        order.save(update_fields=['subtotal', 'shipping', 'total'])
         
         # Refund if prepaid (Razorpay/Wallet) or marked as paid
         if order.payment_status == 'paid' or order.payment_method in ('online', 'wallet'):
