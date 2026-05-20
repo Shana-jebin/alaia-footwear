@@ -1574,7 +1574,7 @@ def admin_sales_report(request):
     orders = _Order2.objects.filter(
         created_at__date__gte=start,
         created_at__date__lte=end,
-    ).exclude(status='cancelled')
+    ).exclude(status__in=['cancelled', 'returned'])
 
     # ── summary stats ──
     summary = orders.aggregate(
@@ -1609,7 +1609,7 @@ def admin_sales_report(request):
             order__created_at__date__gte=start,
             order__created_at__date__lte=end,
         )
-        .exclude(order__status='cancelled')
+        .exclude(order__status__in=['cancelled', 'returned'])
         .values('product_name')
         .annotate(units=Sum('quantity'), revenue=Sum('unit_price'))
         .order_by('-units')[:10]
