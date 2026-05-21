@@ -40,7 +40,7 @@ class ProductForm(forms.ModelForm):
             return cat
         if self.instance.pk and cat.id == self.instance.category_id:
             return cat
-        raise forms.ValidationError('Cannot assign product to inactive category.')
+        raise forms.ValidationError('Category is inactive – please select an active category.')
 
     def clean_brand(self):
         brand = self.cleaned_data['brand']

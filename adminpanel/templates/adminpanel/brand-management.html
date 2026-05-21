@@ -300,6 +300,46 @@ setTimeout(function(){
 
 window.history.replaceState({}, document.title, window.location.pathname);
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function confirmBrandDelete(event, url) {
+  event.preventDefault();
+  if (!confirm('Are you sure you want to delete this brand?')) return;
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+      'Accept': 'application/json',
+    },
+    credentials: 'same-origin',
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message || 'Brand deleted successfully');
+      location.reload();
+    } else {
+      alert(data.message || 'Failed to delete brand');
+    }
+  })
+  .catch(err => {
+    console.error('Delete error:', err);
+    alert('An error occurred while deleting the brand.');
+  });
+}
 </script>
 {% endblock %}
 
