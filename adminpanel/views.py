@@ -821,14 +821,13 @@ def brand_edit(request, pk):
 @never_cache
 @login_required
 @user_passes_test(is_admin, login_url='admin_login')
-
-    @require_POST
-    def brand_delete(request, pk):
-        """Soft delete a brand via POST, returning JSON."""
-        brand = get_object_or_404(Brand, pk=pk)
-        brand.is_active = False
-        brand.save()
-        return JsonResponse({'success': True, 'message': f'Brand "{brand.name}" deactivated.'})
+@require_POST
+def brand_delete(request, pk):
+    """Soft delete a brand via POST, returning JSON."""
+    brand = get_object_or_404(Brand, pk=pk)
+    brand.is_active = False
+    brand.save()
+    return JsonResponse({'success': True, 'message': f'Brand "{brand.name}" deactivated.'})
 
 @never_cache
 @login_required
