@@ -20,9 +20,30 @@ class ProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Include active categories plus the currently assigned inactive one
+        active_categories = Category.objects.filter(is_active=True, is_deleted=False)
+        if self.instance.pk and self.instance.category and not self.instance.category.is_active:
+            active_categories = list(active_categories) + [self.instance.category]
+        self.fields['category'].queryset = Category.objects.filter(id__in=[c.id for c in active_categories])
+        # Same for brands
+        active_brands = Brand.objects.filter(is_active=True)
+        if self.instance.pk and self.instance.brand and not self.instance.brand.is_active:
+            active_brands = list(active_brands) + [self.instance.brand]
+        self.fields['brand'].queryset = Brand.objects.filter(id__in=[b.id for b in active_brands])
         self.fields['description'].required = False
-
         self.fields['occasions'].widget = forms.CheckboxSelectMultiple()
+
+    def clean_category(self):
+        cat = self.cleaned_data['category']
+        if not cat.is_active:
+            raise forms.ValidationError('Cannot assign product to inactive category.')
+        return cat
+
+    def clean_brand(self):
+        brand = self.cleaned_data['brand']
+        if not brand.is_active:
+            raise forms.ValidationError('Cannot assign product to inactive brand.')
+        return brand
 
 
 

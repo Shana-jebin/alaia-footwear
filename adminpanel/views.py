@@ -379,8 +379,6 @@ def admin_category_edit(request, category_id):
 
     return redirect('admin_category_list')
 
-
-
 @login_required
 @user_passes_test(is_admin)
 def admin_category_toggle(request, category_id):
@@ -392,11 +390,12 @@ def admin_category_toggle(request, category_id):
         # Ensure category is not marked as deleted
         category.is_deleted = False
         category.save()
-
         status = "activated" if category.is_active else "deactivated"
         messages.success(request, f"Category {status} successfully!")
+        return JsonResponse({'success': True, 'is_active': category.is_active, 'message': f'Category {status} successfully.'})
 
-    return redirect('admin_category_list')
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
 
 
 
