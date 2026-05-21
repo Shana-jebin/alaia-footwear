@@ -18,7 +18,7 @@ urlpatterns = [
     # ── Categories ────────────────────────────────────────────────
     path('categories/',                                 views.admin_category_list,          name='admin_category_list'),
     path('category/edit/<int:category_id>/',            views.admin_category_edit,          name='admin_category_edit'),
-    path('category/delete/<int:category_id>/',          views.admin_category_delete,        name='admin_category_delete'),
+    path('category/toggle/<int:category_id>/',          views.admin_category_toggle,        name='admin_category_toggle'),
     path('categories/<int:category_id>/set-offer/',     views.admin_category_offer_update,  name='admin_category_offer_update'),
 
     # ── Products ──────────────────────────────────────────────────

@@ -77,12 +77,14 @@
                 </button>
 
                 
+                {% if category.is_active %}
                   <button type="button"
-class="btn-icon btn-delete"
-data-url="{% url 'admin_category_delete' category.id %}"
-data-name="{{ category.name }}"
-onclick="openDeleteModal(this)">
-
+                          class="btn-icon btn-delete"
+                          data-url="{% url 'admin_category_toggle' category.id %}"
+                          data-name="{{ category.name }}"
+                          data-active="True"
+                          title="Deactivate Category"
+                          onclick="openDeleteModal(this)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M3 6h18" />
                       <path d="M8 6V4h8v2" />
@@ -91,7 +93,19 @@ onclick="openDeleteModal(this)">
                       <path d="M14 11v6" />
                     </svg>
                   </button>
-                </form>
+                {% else %}
+                  <button type="button"
+                          class="btn-icon btn-edit"
+                          data-url="{% url 'admin_category_toggle' category.id %}"
+                          data-name="{{ category.name }}"
+                          data-active="False"
+                          title="Activate Category"
+                          onclick="openDeleteModal(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 6 9 17l-5-5"/>
+                    </svg>
+                  </button>
+                {% endif %}
               </div>
             </td>
           </tr>
@@ -340,11 +354,28 @@ onclick="openDeleteModal(this)">
 
     const url = button.dataset.url
     const name = button.dataset.name
+    const isActive = button.dataset.active === 'True'
 
     document.getElementById('deleteCategoryForm').action = url
 
+    const actionText = isActive ? 'deactivate' : 'activate'
     document.getElementById('deleteWarningTitle').innerText =
-        `Are you sure you want to delete "${name}"?`
+        `Are you sure you want to ${actionText} the category "${name}"?`
+
+    const submitBtn = document.querySelector('#deleteCategoryForm button')
+    if (submitBtn) {
+        submitBtn.innerText = isActive ? 'Deactivate Category' : 'Activate Category'
+        if (isActive) {
+            submitBtn.className = 'btn btn-danger'
+        } else {
+            submitBtn.className = 'btn btn-primary'
+        }
+    }
+    
+    const modalTitle = document.querySelector('#deleteCategoryModal h2')
+    if (modalTitle) {
+        modalTitle.innerText = isActive ? 'Deactivate Category' : 'Activate Category'
+    }
 
     document.getElementById('deleteCategoryModal').classList.add('active')
 }
