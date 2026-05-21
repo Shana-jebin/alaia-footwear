@@ -35,15 +35,21 @@ class ProductForm(forms.ModelForm):
 
     def clean_category(self):
         cat = self.cleaned_data['category']
-        if not cat.is_active:
-            raise forms.ValidationError('Cannot assign product to inactive category.')
-        return cat
+        # Allow if the category is active, or if it's the same as the current instance's inactive category
+        if cat.is_active:
+            return cat
+        if self.instance.pk and cat.id == self.instance.category_id:
+            return cat
+        raise forms.ValidationError('Cannot assign product to inactive category.')
 
     def clean_brand(self):
         brand = self.cleaned_data['brand']
-        if not brand.is_active:
-            raise forms.ValidationError('Cannot assign product to inactive brand.')
-        return brand
+        # Allow if brand is active, or if it's the same as the current instance's inactive brand
+        if brand.is_active:
+            return brand
+        if self.instance.pk and brand.id == self.instance.brand_id:
+            return brand
+        raise forms.ValidationError('Cannot assign product to inactive brand.')
 
 
 

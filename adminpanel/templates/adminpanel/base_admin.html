@@ -202,7 +202,8 @@ active{% endif %}">
     </div>
 
     {% block extra_js %}
-      <script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
         setTimeout(function () {
           let alerts = document.querySelectorAll('.alert')
           alerts.forEach(function (alert) {
