@@ -79,12 +79,10 @@
                 
                 {% if category.is_active %}
                   <button type="button"
-                          class="btn-icon btn-delete"
+                          class="btn-icon btn-toggle"
                           data-url="{% url 'admin_category_toggle' category.id %}"
-                          data-name="{{ category.name }}"
-                          data-active="True"
                           title="Deactivate Category"
-                          onclick="openDeleteModal(this)">
+                          onclick="toggleCategory(this)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M3 6h18" />
                       <path d="M8 6V4h8v2" />
@@ -95,12 +93,10 @@
                   </button>
                 {% else %}
                   <button type="button"
-                          class="btn-icon btn-edit"
+                          class="btn-icon btn-toggle"
                           data-url="{% url 'admin_category_toggle' category.id %}"
-                          data-name="{{ category.name }}"
-                          data-active="False"
                           title="Activate Category"
-                          onclick="openDeleteModal(this)">
+                          onclick="toggleCategory(this)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M20 6 9 17l-5-5"/>
                     </svg>
@@ -298,9 +294,9 @@
     Cancel
     </button>
 
-    <form method="POST" id="deleteCategoryForm">
+    <form method="POST" id="deleteCategoryForm" onsubmit="event.preventDefault(); submitDeleteCategory(this);">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">
+        <button type="submit" class="btn btn-danger" id="deleteSubmitBtn">
             Delete Category
         </button>
     </form>
@@ -312,88 +308,86 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script>
-    function openModal() {
-      document.getElementById('addCategoryModal').classList.add('active')
-      document.body.style.overflow = 'hidden'
-    }
-    
-    function closeModal() {
-      document.getElementById('addCategoryModal').classList.remove('active')
-      document.body.style.overflow = 'auto'
-      document.querySelector('#addCategoryModal form').reset()
-    }
-    
-    function openEditModal(button) {
-    
-      const url = button.dataset.url
-      const name = button.dataset.name
-      const description = button.dataset.description || ''
-      const offer = button.dataset.offer || ''
-      const status = button.dataset.status === 'True' ? 'True' : 'False'
-    
-      document.getElementById('editCategoryName').value = name
-      document.getElementById('editDescription').value = description
-      
-      const offerInput = document.getElementById('editOffer')
-      if (offerInput) offerInput.value = offer
-      
-      document.getElementById('editStatus').value = status
-    
-      document.getElementById('editCategoryForm').action = url
-    
-      document.getElementById('editCategoryModal').classList.add('active')
-    }
-    
-    function closeEditModal() {
-      document.getElementById('editCategoryModal').classList.remove('active')
-      document.body.style.overflow = 'auto'
-    }
+    <script>
+      function openModal() {
+        document.getElementById('addCategoryModal').classList.add('active')
+        document.body.style.overflow = 'hidden'
+      }
 
-    function openDeleteModal(button) {
+      function closeModal() {
+        document.getElementById('addCategoryModal').classList.remove('active')
+        document.body.style.overflow = 'auto'
+        document.querySelector('#addCategoryModal form').reset()
+      }
 
-    const url = button.dataset.url
-    const name = button.dataset.name
-    const isActive = button.dataset.active === 'True'
+      function openEditModal(button) {
+        const url = button.dataset.url
+        const name = button.dataset.name
+        const description = button.dataset.description || ''
+        const offer = button.dataset.offer || ''
+        const status = button.dataset.status === 'True' ? 'True' : 'False'
+        document.getElementById('editCategoryName').value = name
+        document.getElementById('editDescription').value = description
+        const offerInput = document.getElementById('editOffer')
+        if (offerInput) offerInput.value = offer
+        document.getElementById('editStatus').value = status
+        document.getElementById('editCategoryForm').action = url
+        document.getElementById('editCategoryModal').classList.add('active')
+      }
 
-    document.getElementById('deleteCategoryForm').action = url
+      function closeEditModal() {
+        document.getElementById('editCategoryModal').classList.remove('active')
+        document.body.style.overflow = 'auto'
+      }
 
-    const actionText = isActive ? 'deactivate' : 'activate'
-    document.getElementById('deleteWarningTitle').innerText =
-        `Are you sure you want to ${actionText} the category "${name}"?`
-
-    const submitBtn = document.querySelector('#deleteCategoryForm button')
-    if (submitBtn) {
-        submitBtn.innerText = isActive ? 'Deactivate Category' : 'Activate Category'
-        if (isActive) {
-            submitBtn.className = 'btn btn-danger'
-        } else {
-            submitBtn.className = 'btn btn-primary'
+      function openDeleteModal(button) {
+        const url = button.dataset.url
+        const name = button.dataset.name
+        const isActive = button.dataset.active === 'True'
+        document.getElementById('deleteCategoryForm').action = url
+        const actionText = isActive ? 'deactivate' : 'activate'
+        document.getElementById('deleteWarningTitle').innerText = `Are you sure you want to ${actionText} the category "${name}"?`
+        const submitBtn = document.getElementById('deleteSubmitBtn')
+        if (submitBtn) {
+            submitBtn.innerText = isActive ? 'Deactivate Category' : 'Activate Category'
+            submitBtn.className = isActive ? 'btn btn-danger' : 'btn btn-primary'
         }
-    }
-    
-    const modalTitle = document.querySelector('#deleteCategoryModal h2')
-    if (modalTitle) {
-        modalTitle.innerText = isActive ? 'Deactivate Category' : 'Activate Category'
-    }
+        const modalTitle = document.querySelector('#deleteCategoryModal h2')
+        if (modalTitle) {
+            modalTitle.innerText = isActive ? 'Deactivate Category' : 'Activate Category'
+        }
+        document.getElementById('deleteCategoryModal').classList.add('active')
+      }
 
-    document.getElementById('deleteCategoryModal').classList.add('active')
-}
+      function closeDeleteModal() {
+        document.getElementById('deleteCategoryModal').classList.remove('active')
+      }
 
-function closeDeleteModal() {
-    document.getElementById('deleteCategoryModal').classList.remove('active')
-}
+      async function submitDeleteCategory(form) {
+        const url = form.action
+        const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrf, 'Accept': 'application/json' },
+        })
+        if (response.ok) {
+          const data = await response.json()
+          // Optionally show a success toast or update UI
+          closeDeleteModal()
+          // Reload the page to reflect changes
+          window.location.reload()
+        } else {
+          alert('Failed to update category status.')
+        }
+      }
 
-
-    setTimeout(function () {
+      setTimeout(function () {
         let alerts = document.querySelectorAll('.alert');
         alerts.forEach(function(alert) {
             alert.style.opacity = "0";
             alert.style.transform = "translateY(-10px)";
             setTimeout(() => alert.remove(), 500);
         });
-    }, 3000);
-
-
-  </script>
+      }, 3000);
+    </script>
 {% endblock %}

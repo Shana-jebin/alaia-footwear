@@ -34,7 +34,9 @@ class ProductForm(forms.ModelForm):
         self.fields['occasions'].widget = forms.CheckboxSelectMultiple()
 
     def clean_category(self):
-        cat = self.cleaned_data['category']
+        cat = self.cleaned_data.get('category')
+        if not cat:
+            raise forms.ValidationError('Category is required.')
         # Allow if the category is active, or if it's the same as the current instance's inactive category
         if cat.is_active:
             return cat
@@ -43,7 +45,9 @@ class ProductForm(forms.ModelForm):
         raise forms.ValidationError('Category is inactive – please select an active category.')
 
     def clean_brand(self):
-        brand = self.cleaned_data['brand']
+        brand = self.cleaned_data.get('brand')
+        if not brand:
+            raise forms.ValidationError('Brand is required.')
         # Allow if brand is active, or if it's the same as the current instance's inactive brand
         if brand.is_active:
             return brand

@@ -381,26 +381,20 @@ def admin_category_edit(request, category_id):
 
 @login_required
 @user_passes_test(is_admin)
+@require_POST
 def admin_category_toggle(request, category_id):
+    """Toggle the active status of a category (soft delete/activate)."""
     category = get_object_or_404(Category, id=category_id)
-
-    if request.method == "POST":
-        # Toggle active status
-        category.is_active = not category.is_active
-        # Ensure category is not marked as deleted
+    if category.is_active:
+        category.is_active = False
+        category.is_deleted = True
+        messages.success(request, f"Category '{category.name}' deactivated.")
+    else:
+        category.is_active = True
         category.is_deleted = False
-        category.save()
-        status = "activated" if category.is_active else "deactivated"
-        messages.success(request, f"Category {status} successfully!")
-        return JsonResponse({'success': True, 'is_active': category.is_active, 'message': f'Category {status} successfully.'})
-
-    return JsonResponse({'error': 'Invalid request method.'}, status=400)
-
-
-
-
-
-
+        messages.success(request, f"Category '{category.name}' activated.")
+    category.save()
+    return JsonResponse({"success": True, "is_active": category.is_active, "message": "Category status updated."})
 
 @never_cache
 @login_required
