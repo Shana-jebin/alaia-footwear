@@ -369,6 +369,8 @@ def admin_category_edit(request, category_id):
         category.description = request.POST.get('description')
         category.offer_percentage = request.POST.get('offer_percentage') or None
         category.is_active = request.POST.get('is_active') == "True"
+        
+        category.is_deleted = False
 
         category.save()
 

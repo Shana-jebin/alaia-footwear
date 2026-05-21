@@ -66,6 +66,7 @@ def product_list(request):
             is_deleted=False,
             is_active=True,
             category__is_deleted=False,
+            category__is_active=True,
             brand__is_active=True,
         )
         .select_related('brand', 'category')
@@ -243,11 +244,11 @@ def product_list(request):
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)   
 
-    if product.is_deleted or not product.is_active or not product.brand.is_active:
+    if product.is_deleted or not product.is_active or not product.brand.is_active or product.category.is_deleted or not product.category.is_active:
         return redirect('products:product_list')
 
-    # Category inactive or deleted = show as sold out, don't redirect
-    is_blocked = product.category.is_deleted or not product.category.is_active
+    # Category inactive or deleted = show as sold out, don't redirect (removed as it redirects now)
+    is_blocked = False
     variants = (
         product.variants
         .filter(is_deleted=False)
@@ -288,6 +289,10 @@ def product_detail(request, slug):
         .filter(
             Q(category=product.category) | Q(brand=product.brand),
             is_active=True,
+            is_deleted=False,
+            category__is_active=True,
+            category__is_deleted=False,
+            brand__is_active=True,
         )
         .exclude(id=product.id)
         .prefetch_related('variants__images')
