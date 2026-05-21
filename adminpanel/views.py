@@ -383,15 +383,18 @@ def admin_category_edit(request, category_id):
 
 @login_required
 @user_passes_test(is_admin)
-def admin_category_delete(request, category_id):
+def admin_category_toggle(request, category_id):
     category = get_object_or_404(Category, id=category_id)
 
     if request.method == "POST":
-        category.is_deleted = True  
-        category.is_active = False
+        # Toggle active status
+        category.is_active = not category.is_active
+        # Ensure category is not marked as deleted
+        category.is_deleted = False
         category.save()
 
-        messages.success(request, "Category deleted successfully!")
+        status = "activated" if category.is_active else "deactivated"
+        messages.success(request, f"Category {status} successfully!")
 
     return redirect('admin_category_list')
 
