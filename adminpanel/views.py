@@ -543,11 +543,11 @@ def product_edit(request, pk):
             with transaction.atomic():
                 product_form = ProductForm(request.POST, instance=product)
                 if not product_form.is_valid():
-                        return JsonResponse({
-                            'success': False,
-                            'errors': product_form.errors,
-                            'message': 'Validation errors occurred.'
-                        })
+                    return JsonResponse({
+                        'success': False,
+                        'errors': product_form.errors,
+                        'message': 'Validation errors occurred.'
+                    }, status=400)
 
                 product = product_form.save()
                 variants_json = request.POST.get('variants')
@@ -821,13 +821,14 @@ def brand_edit(request, pk):
 @never_cache
 @login_required
 @user_passes_test(is_admin, login_url='admin_login')
-@require_POST
-def brand_delete(request, pk):
-    """Soft delete a brand by setting is_active=False."""
-    brand = get_object_or_404(Brand, pk=pk)
-    brand.is_active = False
-    brand.save()
-    return redirect('brand_list')
+
+    @require_POST
+    def brand_delete(request, pk):
+        """Soft delete a brand via POST, returning JSON."""
+        brand = get_object_or_404(Brand, pk=pk)
+        brand.is_active = False
+        brand.save()
+        return JsonResponse({'success': True, 'message': f'Brand "{brand.name}" deactivated.'})
 
 @never_cache
 @login_required

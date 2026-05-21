@@ -44,23 +44,7 @@
     
     toggleClear() // on load
     
-    function confirmBrandDelete(event, url) {
-        event.preventDefault();
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "Do you really want to delete this brand? This will deactivate it.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Proceed to delete by navigating to the URL
-                window.location.href = url;
-            }
-        });
-    }
+
   </script>
 
   <!-- Table -->
