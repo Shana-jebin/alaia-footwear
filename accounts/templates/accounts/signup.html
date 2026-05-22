@@ -14,12 +14,23 @@
         <h1>JOIN THE ATELIER</h1>
         <p class="subtitle">Create your account to access exclusive collections.</p>
         {% if messages %}
-          <div class="message-container">
+          <div class="message-container" id="toast-container" style="position:fixed;top:20px;right:20px;z-index:1000;">
             {% for message in messages %}
-              <div class="alert {{ message.tags }}">{{ message }}</div>
+              <div class="toast {{ message.tags }}" style="background:#333;color:#fff;padding:12px 20px;margin-bottom:10px;border-radius:4px;opacity:0.9;box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+                {{ message }}
+              </div>
             {% endfor %}
           </div>
         {% endif %}
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+              setTimeout(() => { toast.style.transition = 'opacity 0.5s'; toast.style.opacity = '0'; }, 3000);
+              setTimeout(() => { toast.remove(); }, 3500);
+            });
+          });
+        </script>
 
         <form method="POST" novalidate>
           {% csrf_token %}
