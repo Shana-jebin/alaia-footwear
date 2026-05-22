@@ -255,7 +255,7 @@ def add_address(request):
         next_url = request.POST.get('next') or request.GET.get('next')
         if next_url:
             return redirect(next_url)
-        if Address.objects.filter(user=request.user).count() >= 2:
+        if Address.objects.filter(user=request.user).count() >= 1:
             return redirect('orders:checkout')
         return redirect("address_list")
 
