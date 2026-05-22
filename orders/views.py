@@ -256,8 +256,8 @@ def checkout(request):
     total    = subtotal + shipping
 
     addresses = Address.objects.filter(user=request.user).order_by('-is_default', '-created_at')
-    if addresses.count() < 2:
-        messages.error(request, "Please add at least 2 delivery addresses before checkout.")
+    if addresses.count() < 1:
+        messages.error(request, "Please add at least one delivery address before checkout.")
         return redirect(f"{reverse('address_list')}?next={request.path}")
     default_address = addresses.filter(is_default=True).first() or addresses.first()
 
