@@ -463,9 +463,18 @@ def product_add(request):
             if not product_form.is_valid():
                 return JsonResponse({
                     'success': False,
-                    'errors': product_form.errors
+                    'errors': product_form.errors,
+                    'message': 'Validation errors occurred.'
                 }, status=400)
-
+            
+            # Validate category is active
+            category = product_form.cleaned_data.get('category')
+            if category and not category.is_active:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Selected category is inactive. Please choose an active category.'
+                }, status=400)
+                
             product = product_form.save()
 
             variants_json = request.POST.get('variants')
@@ -541,6 +550,14 @@ def product_edit(request, pk):
                         'success': False,
                         'errors': product_form.errors,
                         'message': 'Validation errors occurred.'
+                    }, status=400)
+
+                # Validate category is active
+                category = product_form.cleaned_data.get('category')
+                if category and not category.is_active:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Selected category is inactive. Please choose an active category.'
                     }, status=400)
 
                 product = product_form.save()
