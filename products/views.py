@@ -371,12 +371,21 @@ def submit_review(request, product_id):
         if Review.objects.filter(product=product, user=request.user).exists():
             return JsonResponse({'error': 'You have already reviewed this product.'}, status=400)
 
+        # Ensure the user has purchased this product before reviewing
+        from orders.models import OrderItem
+        has_purchased = OrderItem.objects.filter(
+            order__user=request.user,
+            product_name=product.name,
+            order__status__in=['delivered', 'shipped', 'out_for_delivery']
+        ).exists()
+        if not has_purchased:
+            return JsonResponse({'error': 'You can only review products you have purchased.'}, status=403)
         Review.objects.create(
             product=product,
             user=request.user,
             rating=rating,
             comment=comment,
-            is_approved=True,   
+            is_approved=True,
         )
         return JsonResponse({'success': True, 'message': 'Review submitted successfully!'})
 
